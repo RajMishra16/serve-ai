@@ -6,8 +6,8 @@ import { z } from "zod";
 Request validation schema
 */
 const pantrySchema = z.object({
-  name: z.string().min(1),
-  quantity: z.string().min(1),
+  name: z.string().min(1, "Ingredient name is required"),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
 });
 
 /*
@@ -46,6 +46,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    // Validate request body
     const parsed = pantrySchema.safeParse(body);
 
     if (!parsed.success) {
@@ -53,6 +54,7 @@ export async function POST(req: Request) {
         {
           success: false,
           error: "Invalid ingredient data",
+          details: parsed.error.format(),
         },
         { status: 400 }
       );

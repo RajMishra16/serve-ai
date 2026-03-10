@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
-  quantity: z.string().min(1).optional(),
+  quantity: z.number().min(1).optional(),
 });
 
 export async function PATCH(

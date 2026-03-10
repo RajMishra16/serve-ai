@@ -20,7 +20,7 @@ export async function getPantryItems(userId: string) {
 }
 export async function addPantryItem(
   userId: string,
-  item: { name: string; quantity: string; confidence?: number; added_via?: string }
+  item: { name: string; quantity: number; confidence?: number; added_via?: string }
 ) {
   try {
     const result = await db.query(
@@ -47,7 +47,7 @@ export async function addPantryItem(
 export async function updatePantryItem(
   userId: string,
   itemId: string,
-  data: { name?: string; quantity?: string }
+  data: { name?: string; quantity?: number }
 ) {
   try {
     const result = await db.query(
