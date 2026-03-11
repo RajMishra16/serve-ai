@@ -1,16 +1,19 @@
-import axios from "axios";
+import api from "@/lib/api"
+import { ScanIngredient } from "@/types/ScanIngredient"
 
-const API_BASE = "http://localhost:5000/api";
+interface ScanResponse {
+  success: boolean
+  data: string[]
+}
 
-export const scanPantryImage = async (file: File) => {
-  const formData = new FormData();
-  formData.append("image", file);
+export const scanImage = async (imageBase64: string): Promise<ScanIngredient[]> => {
+  const response = await api.post<ScanResponse>("/scan", {
+    imageBase64
+  })
 
-  const response = await axios.post(`${API_BASE}/scan`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const ingredients = response.data.data
 
-  return response.data;
-};
+  return ingredients.map((item) => ({
+    name: item
+  }))
+}

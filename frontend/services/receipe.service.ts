@@ -1,15 +1,26 @@
-import axios from "axios";
+import api from "@/lib/api"
 
-const API_BASE = "http://localhost:5000/api";
+export interface Recipe {
+  id: string
+  title: string
+  ingredients: string[]
+  steps: string[]
+  cookTime: number
+  difficulty: string
+}
 
-export const generateRecipes = async (ingredients: string[]) => {
-  const response = await axios.post(`${API_BASE}/recipes/generate`, {
-    ingredients,
-  });
-  return response.data;
-};
+interface GenerateRecipeResponse {
+  success: boolean
+  data: Recipe[]
+}
+
+export const generateRecipes = async (): Promise<Recipe[]> => {
+  const response = await api.post<GenerateRecipeResponse>("/recipes/generate")
+
+  return response.data.data
+}
 
 export const getSavedRecipes = async () => {
-  const response = await axios.get(`${API_BASE}/recipes/saved`);
-  return response.data;
-};
+  const response = await api.get("/recipes/saved")
+  return response.data
+}
