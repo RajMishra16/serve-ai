@@ -18,11 +18,41 @@ export async function getPantryItems(userId: string) {
     throw new Error("Failed to fetch pantry items");
   }
 }
+
 export async function addPantryItem(
   userId: string,
   item: { name: string; quantity: number; confidence?: number; added_via?: string }
 ) {
   try {
+    // 🔹 Check if item already exists
+    const existing = await db.query(
+      `
+      SELECT id, quantity
+      FROM pantry_items
+      WHERE name = $1 AND user_id = $2
+      `,
+      [item.name, userId]
+    );
+
+    // 🔹 If exists → update quantity
+    if (existing.rows.length > 0) {
+      const newQuantity =
+        Number(existing.rows[0].quantity) + Number(item.quantity);
+
+      const updated = await db.query(
+        `
+        UPDATE pantry_items
+        SET quantity = $1
+        WHERE id = $2
+        RETURNING id, name, quantity, confidence, added_via, created_at
+        `,
+        [newQuantity, existing.rows[0].id]
+      );
+
+      return updated.rows[0];
+    }
+
+    // 🔹 Otherwise insert new item
     const result = await db.query(
       `
       INSERT INTO pantry_items (name, quantity, confidence, added_via, user_id)
@@ -44,6 +74,7 @@ export async function addPantryItem(
     throw new Error("Failed to add pantry item");
   }
 }
+
 export async function updatePantryItem(
   userId: string,
   itemId: string,
@@ -71,6 +102,7 @@ export async function updatePantryItem(
     throw new Error("Failed to update pantry item");
   }
 }
+
 export async function deletePantryItem(userId: string, itemId: string) {
   try {
     const result = await db.query(
