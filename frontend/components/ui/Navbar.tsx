@@ -1,24 +1,39 @@
-"use client";
-
-import Link from "next/link";
+import Link from "next/link"
 
 export default function Navbar() {
   return (
     <nav className="w-full border-b bg-white">
-      <div className="max-w-6xl mx-auto flex items-center justify-between p-4">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex gap-6">
 
-        <h1 className="text-xl font-bold">ServeAI</h1>
+        <Link href="/dashboard" className="text-gray-700 hover:text-black">
+          Dashboard
+        </Link>
 
-        <div className="flex gap-6 text-sm font-medium">
-          <Link href="/dashboard">Dashboard</Link>
-          <Link href="/pantry">Pantry</Link>
-          <Link href="/scan">Scan</Link>
-          <Link href="/recipes">Recipes</Link>
-          <Link href="/saved">Saved</Link>
-          <Link href="/settings">Settings</Link>
-        </div>
+        <Link href="/pantry" className="text-gray-700 hover:text-black">
+          Pantry
+        </Link>
+
+        <Link href="/scan" className="text-gray-700 hover:text-black">
+          Scan
+        </Link>
+
+        <Link href="/recipes" className="text-gray-700 hover:text-black">
+          Recipes
+        </Link>
+
+        <Link href="/saved" className="text-gray-700 hover:text-black">
+          Library
+        </Link>
+
+        <Link href="/history" className="text-gray-700 hover:text-black">
+          History
+        </Link>
+
+        <Link href="/settings" className="text-gray-700 hover:text-black">
+          Settings
+        </Link>
 
       </div>
     </nav>
-  );
+  )
 }
