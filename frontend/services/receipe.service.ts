@@ -15,7 +15,9 @@ interface GenerateRecipeResponse {
 }
 
 export const generateRecipes = async (): Promise<Recipe[]> => {
-  const response = await api.post<GenerateRecipeResponse>("/recipes/generate")
+  const response = await api.post<GenerateRecipeResponse>("/recipes/generate", {
+    userId: "test-user"
+  })
 
   return response.data.data
 }
