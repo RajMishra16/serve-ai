@@ -1,38 +1,36 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import ImageUploader from "@/components/ImageUploader"
-import ScanResultCard from "@/components/ScanResultCard"
-import { ScanIngredient } from "@/types/ScanIngredient"
+import { useState } from "react";
+import ImageUploader from "@/components/ImageUploader";
+import ScanResultCard from "@/components/ScanResultCard";
+import PageHeader from "@/components/ui/PageHeader";
+import { ScanIngredient } from "@/types/ScanIngredient";
 
 export default function ScanPage() {
-  const [ingredients, setIngredients] = useState<ScanIngredient[]>([])
-
-  const handleScanComplete = (data: ScanIngredient[]) => {
-    setIngredients(data)
-  }
+  const [ingredients, setIngredients] = useState<ScanIngredient[]>([]);
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>AI Ingredient Scanner</h1>
+    <div className="p-6 space-y-8">
 
-      <p>Upload an image of your fridge or ingredients.</p>
+      <PageHeader
+        title="Scan Ingredients"
+        subtitle="Upload an image to detect ingredients automatically"
+      />
 
-      <ImageUploader onScanComplete={handleScanComplete} />
+      {/* Image Upload */}
+      <div className="max-w-xl">
+        <ImageUploader onScanComplete={setIngredients} />
+      </div>
 
+      {/* Scan Results */}
       {ingredients.length > 0 && (
-        <div style={{ marginTop: "30px" }}>
-          <h2>Detected Ingredients</h2>
-
+        <div className="space-y-3">
           {ingredients.map((ingredient, index) => (
             <ScanResultCard key={index} ingredient={ingredient} />
           ))}
-
-          <p style={{ marginTop: "20px", color: "green" }}>
-            Pantry updated automatically ✔
-          </p>
         </div>
       )}
+
     </div>
-  )
+  );
 }

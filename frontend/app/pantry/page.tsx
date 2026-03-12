@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import PantryGrid from "@/components/ui/PantryGrid";
 import IngredientForm from "@/components/IngredientForm";
 import { PantryItem } from "@/types/PantryItem";
-import { getPantryItems, addPantryItem, updatePantryItem, deletePantryItem } from "@/services/pantry.service";
+import {
+  getPantryItems,
+  addPantryItem,
+  updatePantryItem,
+  deletePantryItem,
+} from "@/services/pantry.service";
+import PageHeader from "@/components/ui/PageHeader";
 
 export default function PantryPage() {
   const [items, setItems] = useState<PantryItem[]>([]);
@@ -13,50 +19,45 @@ export default function PantryPage() {
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
 
   const handleAddIngredient = async (data: { name: string; quantity: number }) => {
-  try {
-    const newItem = await addPantryItem(data);
+    try {
+      const newItem = await addPantryItem(data);
+      setItems((prev) => [...prev, newItem]);
+      setShowForm(false);
+    } catch (error) {
+      console.error("Error adding ingredient:", error);
+    }
+  };
 
-    setItems((prev) => [...prev, newItem]);
+  const handleDeleteIngredient = async (id: string) => {
+    try {
+      await deletePantryItem(id);
+      setItems((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting ingredient:", error);
+    }
+  };
 
-    setShowForm(false);
-  } catch (error) {
-    console.error("Error adding ingredient:", error);
-  }
-};
+  const handleEditIngredient = (item: PantryItem) => {
+    setEditingItem(item);
+    setShowForm(true);
+  };
 
-const handleDeleteIngredient = async (id: string) => {
-  try {
-    await deletePantryItem(id);
+  const handleUpdateIngredient = async (data: { name: string; quantity: number }) => {
+    if (!editingItem) return;
 
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  } catch (error) {
-    console.error("Error deleting ingredient:", error);
-  }
-};
+    try {
+      const updatedItem = await updatePantryItem(editingItem.id, data);
 
-const handleEditIngredient = (item: PantryItem) => {
-  setEditingItem(item);
-  setShowForm(true);
-};
+      setItems((prev) =>
+        prev.map((item) => (item.id === editingItem.id ? updatedItem : item))
+      );
 
-const handleUpdateIngredient = async (data: { name: string; quantity: number }) => {
-  if (!editingItem) return;
-
-  try {
-    const updatedItem = await updatePantryItem(editingItem.id, data);
-
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === editingItem.id ? updatedItem : item
-      )
-    );
-
-    setEditingItem(null);
-    setShowForm(false);
-  } catch (error) {
-    console.error("Error updating ingredient:", error);
-  }
-};
+      setEditingItem(null);
+      setShowForm(false);
+    } catch (error) {
+      console.error("Error updating ingredient:", error);
+    }
+  };
 
   // Fetch pantry items
   useEffect(() => {
@@ -75,45 +76,43 @@ const handleUpdateIngredient = async (data: { name: string; quantity: number }) 
   }, []);
 
   if (loading) {
-    return (
-      <div>
-    
-        <div className="p-6">Loading pantry...</div>
-      </div>
-    );
+    return <div className="p-6">Loading pantry...</div>;
   }
 
   return (
-  <div className="p-6">
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold">My Pantry</h1>
+    <div className="p-6 space-y-6">
+      <PageHeader
+        title="Pantry"
+        subtitle="Manage ingredients available in your kitchen"
+      />
 
-      <button
-        onClick={() => setShowForm(true)}
-        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-      >
-        Add Ingredient
-      </button>
-    </div>
-
-    {showForm && (
-      <div className="mb-6">
-        <IngredientForm
-  editingItem={editingItem}
-  onSubmit={editingItem ? handleUpdateIngredient : handleAddIngredient}
-  onCancel={() => {
-    setShowForm(false);
-    setEditingItem(null);
-  }}
-/>
+      <div className="flex justify-end">
+        <button
+          onClick={() => setShowForm(true)}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+        >
+          Add Ingredient
+        </button>
       </div>
-    )}
 
-    <PantryGrid
-  items={items}
-  onEdit={handleEditIngredient}
-  onDelete={handleDeleteIngredient}
-/>
-  </div>
-);
+      {showForm && (
+        <div className="mb-6">
+          <IngredientForm
+            editingItem={editingItem}
+            onSubmit={editingItem ? handleUpdateIngredient : handleAddIngredient}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingItem(null);
+            }}
+          />
+        </div>
+      )}
+
+      <PantryGrid
+        items={items}
+        onEdit={handleEditIngredient}
+        onDelete={handleDeleteIngredient}
+      />
+    </div>
+  );
 }
