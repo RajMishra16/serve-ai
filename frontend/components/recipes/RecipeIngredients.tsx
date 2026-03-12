@@ -1,38 +1,68 @@
 import { Recipe } from "@/types/Recipe"
-import SectionTitle from "../ui/SectionTitle"
+import { CheckCircle, AlertCircle } from "lucide-react"
 
 type RecipeIngredientsProps = {
   recipe: Recipe
 }
 
 export default function RecipeIngredients({ recipe }: RecipeIngredientsProps) {
+
+  const ingredients = recipe.ingredients ?? []
+  const missingIngredients = recipe.missingIngredients ?? []
+
   return (
-    <div className="mb-8">
+    <div className="space-y-6">
 
-      <SectionTitle title="Ingredients" />
+      {/* Ingredients */}
+      <div className="grid gap-3">
 
-      <ul className="list-disc pl-6 space-y-1">
-        {recipe.ingredients.map((ingredient, index) => (
-          <li key={index} className="text-gray-700">
-            {ingredient}
-          </li>
+        {ingredients.map((ingredient, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3"
+          >
+
+            <CheckCircle className="w-4 h-4 text-emerald-600" />
+
+            <span className="text-gray-800">
+              {ingredient}
+            </span>
+
+          </div>
         ))}
-      </ul>
 
-      {recipe.missingIngredients.length > 0 && (
-        <div className="mt-6">
+      </div>
 
-          <SectionTitle title="Missing Ingredients" />
+      {/* Missing Ingredients */}
+      {missingIngredients.length > 0 && (
 
-          <ul className="list-disc pl-6 space-y-1">
-            {recipe.missingIngredients.map((ingredient, index) => (
-              <li key={index} className="text-red-500">
-                {ingredient}
-              </li>
+        <div className="space-y-3 pt-4">
+
+          <h3 className="text-sm font-semibold text-red-600">
+            Missing Ingredients
+          </h3>
+
+          <div className="grid gap-3">
+
+            {missingIngredients.map((ingredient, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-lg px-4 py-3"
+              >
+
+                <AlertCircle className="w-4 h-4 text-red-500" />
+
+                <span className="text-red-600">
+                  {ingredient}
+                </span>
+
+              </div>
             ))}
-          </ul>
+
+          </div>
 
         </div>
+
       )}
 
     </div>

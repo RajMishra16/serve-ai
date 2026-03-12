@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 
 type QuickActionCardProps = {
   title: string
@@ -13,10 +14,26 @@ export default function QuickActionCard({
 }: QuickActionCardProps) {
   return (
     <Link href={href}>
-      <div className="border rounded-xl p-6 hover:shadow-md transition cursor-pointer bg-white">
-        <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+      <div className="group bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer">
 
-        <p className="text-gray-500 mt-2 text-sm">{description}</p>
+        <div className="flex items-start justify-between">
+
+          <div className="space-y-2">
+
+            <h3 className="text-lg font-semibold text-gray-900">
+              {title}
+            </h3>
+
+            <p className="text-gray-500 text-sm leading-relaxed">
+              {description}
+            </p>
+
+          </div>
+
+          <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-700 transition" />
+
+        </div>
+
       </div>
     </Link>
   )

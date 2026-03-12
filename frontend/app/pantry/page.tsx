@@ -59,7 +59,6 @@ export default function PantryPage() {
     }
   };
 
-  // Fetch pantry items
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -76,43 +75,56 @@ export default function PantryPage() {
   }, []);
 
   if (loading) {
-    return <div className="p-6">Loading pantry...</div>;
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading pantry...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <PageHeader
-        title="Pantry"
-        subtitle="Manage ingredients available in your kitchen"
-      />
+    <div className="bg-gray-50 min-h-screen">
 
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          Add Ingredient
-        </button>
+      <div className="max-w-6xl mx-auto px-6 py-10 space-y-8">
+
+        <PageHeader
+          title="Pantry"
+          subtitle="Manage ingredients available in your kitchen"
+        />
+
+        {/* Add Ingredient Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-emerald-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-emerald-700 transition"
+          >
+            + Add Ingredient
+          </button>
+        </div>
+
+        {/* Ingredient Form */}
+        {showForm && (
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+            <IngredientForm
+              editingItem={editingItem}
+              onSubmit={editingItem ? handleUpdateIngredient : handleAddIngredient}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingItem(null);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Pantry Grid */}
+        <PantryGrid
+          items={items}
+          onEdit={handleEditIngredient}
+          onDelete={handleDeleteIngredient}
+        />
+
       </div>
 
-      {showForm && (
-        <div className="mb-6">
-          <IngredientForm
-            editingItem={editingItem}
-            onSubmit={editingItem ? handleUpdateIngredient : handleAddIngredient}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingItem(null);
-            }}
-          />
-        </div>
-      )}
-
-      <PantryGrid
-        items={items}
-        onEdit={handleEditIngredient}
-        onDelete={handleDeleteIngredient}
-      />
     </div>
   );
 }

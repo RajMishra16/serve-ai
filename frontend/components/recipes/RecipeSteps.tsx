@@ -1,23 +1,34 @@
 import { Recipe } from "@/types/Recipe"
-import SectionTitle from "../ui/SectionTitle"
 
 type RecipeStepsProps = {
   recipe: Recipe
 }
 
 export default function RecipeSteps({ recipe }: RecipeStepsProps) {
+
+  const steps = recipe.steps ?? []
+
   return (
-    <div className="mb-8">
+    <div className="space-y-4">
 
-      <SectionTitle title="Steps" />
+      {steps.map((step, index) => (
+        <div
+          key={index}
+          className="flex items-start gap-4 bg-gray-50 border border-gray-200 rounded-xl p-5"
+        >
 
-      <ol className="list-decimal pl-6 space-y-2">
-        {recipe.steps.map((step, index) => (
-          <li key={index} className="text-gray-700">
+          {/* Step Number */}
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-semibold">
+            {index + 1}
+          </div>
+
+          {/* Step Text */}
+          <p className="text-gray-800 leading-relaxed">
             {step}
-          </li>
-        ))}
-      </ol>
+          </p>
+
+        </div>
+      ))}
 
     </div>
   )

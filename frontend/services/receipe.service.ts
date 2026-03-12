@@ -2,56 +2,76 @@ import api from "@/lib/api"
 import { Recipe } from "@/types/Recipe"
 import { LibraryRecipe } from "@/types/LibraryRecipe"
 
-
-interface GenerateRecipeResponse {
+interface ApiResponse<T> {
   success: boolean
-  data: Recipe[]
+  data: T
 }
 
+const USER_ID = "test-user"
+
+
+// Generate AI recipes
 export const generateRecipes = async (): Promise<Recipe[]> => {
-  const response = await api.post<GenerateRecipeResponse>("/recipes/generate", {
-    userId: "test-user"
+
+  const response = await api.post("/recipes/generate", {
+    userId: USER_ID
   })
 
-  return response.data.data
+  const result = response.data?.data ?? []
+
+  // If backend returns generation batch
+  if (Array.isArray(result) && result.length && result[0]?.recipes) {
+    return result[0].recipes
+  }
+
+  return result
 }
 
-export const getSavedRecipes = async () => {
-  const response = await api.get("/recipes/saved")
-  return response.data
-}
 
+
+// Get previously generated recipes (history)
+export const getRecipeHistory = async () => {
+
+  const response = await api.get("/recipes/history", {
+    params: { userId: USER_ID }
+  })
+
+  return response.data?.data ?? []
+}
 
 
 // Get single generated recipe by ID
 export const getRecipeById = async (id: string): Promise<Recipe> => {
-  const response = await api.get(`/api/recipes/${id}`)
-  return response.data
-}
 
+  const response = await api.get(`/recipes/${id}`, {
+    params: { userId: USER_ID }
+  })
 
-// Get previously generated recipes (history)
-export const getRecipeHistory = async (): Promise<Recipe[]> => {
-  const response = await api.get("/api/recipes/history")
-  return response.data
+  const recipe = response.data?.data ?? response.data
+
+  return recipe as Recipe
 }
 
 
 // Get predefined recipe library
 export const getRecipeLibrary = async (): Promise<LibraryRecipe[]> => {
-  const response = await api.get("/api/library")
-  return response.data
+  const response = await api.get<ApiResponse<LibraryRecipe[]>>("/library")
+
+  return response.data?.data ?? []
 }
 
 
 // Get library recipe detail
 export const getLibraryRecipeById = async (id: string): Promise<Recipe> => {
-  const response = await api.get(`/api/library/${id}`)
-  return response.data
-}
+  const response = await api.get<ApiResponse<Recipe>>(`/library/${id}`)
 
-export const generateRecipe = async () => {
-  const response = await api.post("/api/recipes/generate")
+  return response.data?.data
+}
+// Delete recipe from history
+export const deleteRecipe = async (id: string) => {
+  const response = await api.delete(`/recipes/${id}`, {
+    params: { userId: USER_ID }
+  })
 
   return response.data
 }

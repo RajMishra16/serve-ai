@@ -1,6 +1,8 @@
 "use client";
 
 import { PantryItem } from "@/types/PantryItem";
+import { Pencil, Trash2 } from "lucide-react";
+import { getIngredientIcon } from "@/lib/ingredientIcons";
 
 interface IngredientCardProps {
   item: PantryItem;
@@ -13,39 +15,65 @@ export default function IngredientCard({
   onEdit,
   onDelete,
 }: IngredientCardProps) {
+
+  const Icon = getIngredientIcon(item.name);
+
   return (
-    <div className="border rounded-lg p-4 shadow-sm bg-white flex flex-col gap-2">
-      
-      {/* Ingredient Name */}
-      <h3 className="text-lg font-semibold">{item.name}</h3>
+    <div className="group bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition flex flex-col justify-between">
 
-      {/* Quantity */}
-      <p className="text-sm text-gray-600">
-        Quantity: <span className="font-medium">{item.quantity}</span>
-      </p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
 
-      {/* Confidence Score (optional) */}
+        <div className="flex items-center gap-3">
+
+          <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
+
+            {typeof Icon === "string" ? (
+              <span className="text-lg">{Icon}</span>
+            ) : (
+              <Icon className="w-4 h-4 text-emerald-600" />
+            )}
+
+          </div>
+
+          <h3 className="text-gray-900 font-semibold capitalize text-lg">
+            {item.name}
+          </h3>
+
+        </div>
+
+        <span className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600 font-medium">
+          Qty {item.quantity}
+        </span>
+
+      </div>
+
+      {/* Confidence */}
       {item.confidence && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-400 mt-3">
           AI Confidence: {(item.confidence * 100).toFixed(0)}%
         </p>
       )}
 
-      {/* Buttons */}
-      <div className="flex gap-2 mt-3">
+      {/* Actions */}
+      <div className="flex gap-3 mt-5">
+
         <button
           onClick={() => onEdit(item)}
-          className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition"
         >
+          <Pencil className="w-3 h-3" />
           Edit
         </button>
 
         <button
           onClick={() => onDelete(item.id)}
-          className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+          className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
         >
+          <Trash2 className="w-3 h-3" />
           Delete
         </button>
+
       </div>
 
     </div>

@@ -1,50 +1,135 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "@/components/ui/PageHeader";
 import RecipeGrid from "@/components/recipes/RecipeGrid";
-import { generateRecipe } from "@/services/receipe.service";
+import { generateRecipes, getRecipeHistory } from "@/services/receipe.service";
 import { Recipe } from "@/types/Recipe";
+import { Sparkles } from "lucide-react";
+import SkeletonCard from "@/components/ui/SkeletonCard"
 
 export default function RecipesPage() {
+
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Load recipe history when page loads
+  useEffect(() => {
+
+    const loadHistory = async () => {
+
+      try {
+
+        const history = await getRecipeHistory()
+
+        if (Array.isArray(history) && history.length > 0) {
+
+          const latestGeneration = history[0]
+
+          if (latestGeneration.recipes) {
+            setRecipes(latestGeneration.recipes)
+          }
+
+        }
+
+      } catch (error) {
+        console.error("Failed to load recipe history:", error);
+      }
+
+    };
+
+    loadHistory();
+
+  }, []);
+
+
   const handleGenerateRecipes = async () => {
-  try {
-    setLoading(true);
 
-    const data = await generateRecipe();
+    try {
 
-    setRecipes(data);
-  } catch (error) {
-    console.error("Failed to generate recipes:", error);
-  } finally {
-    setLoading(false);
+      setLoading(true)
+
+      const data = await generateRecipes()
+
+      setRecipes(data)
+
+    } catch (error) {
+
+      console.error("Failed to generate recipes:", error)
+
+    } finally {
+
+      setLoading(false)
+
+    }
+
   }
-};
 
   return (
-    <div className="p-6 space-y-8">
 
-      <PageHeader
-        title="Recipes"
-        subtitle="Generate recipes from your pantry ingredients"
-      />
+    <div className="bg-gray-50 min-h-screen">
 
-      {/* Generate Button */}
-      <button
-        onClick={handleGenerateRecipes}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        {loading ? "Generating..." : "Generate Recipes"}
-      </button>
+      <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
 
-      {/* Recipes Grid */}
-      {recipes.length > 0 && (
-        <RecipeGrid recipes={recipes} />
-      )}
+        <PageHeader
+          title="Recipes"
+          subtitle="Generate recipes from your pantry ingredients"
+        />
+
+        {/* Generate Section */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col items-center gap-4">
+
+          <Sparkles className="w-6 h-6 text-emerald-600" />
+
+          <p className="text-gray-600 text-sm text-center">
+            Use your pantry ingredients to generate AI-powered recipes.
+          </p>
+
+          <button
+            onClick={handleGenerateRecipes}
+            className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-emerald-700 transition"
+          >
+            {loading ? "Generating Recipes..." : "Generate Recipes"}
+          </button>
+
+        </div>
+
+        {/* Recipes Grid */}
+        {loading ? (
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <SkeletonCard />
+    <SkeletonCard />
+    <SkeletonCard />
+  </div>
+
+) : recipes.length > 0 ? (
+
+  <RecipeGrid recipes={recipes} />
+
+) : (
+
+  <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500 shadow-sm">
+
+  <div className="text-4xl mb-3">
+    🍳
+  </div>
+
+  <p className="font-medium text-gray-700">
+    No recipes yet
+  </p>
+
+  <p className="text-sm text-gray-500 mt-1">
+    Generate recipes using ingredients from your pantry.
+  </p>
+
+</div>
+
+)}
+
+      </div>
 
     </div>
+
   );
 }

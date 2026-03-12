@@ -1,39 +1,80 @@
+"use client"
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
+import {
+  LayoutDashboard,
+  Refrigerator,
+  ScanLine,
+  ChefHat,
+  BookOpen,
+  History,
+  Settings
+} from "lucide-react"
 
 export default function Navbar() {
+
+  const pathname = usePathname()
+
+  const navLinks = [
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Pantry", href: "/pantry", icon: Refrigerator },
+    { name: "Scan", href: "/scan", icon: ScanLine },
+    { name: "Recipes", href: "/recipes", icon: ChefHat },
+    { name: "Library", href: "/saved", icon: BookOpen },
+    { name: "History", href: "/history", icon: History },
+    { name: "Settings", href: "/settings", icon: Settings },
+  ]
+
   return (
-    <nav className="w-full border-b bg-white">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex gap-6">
+    <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 border-b border-gray-200">
 
-        <Link href="/dashboard" className="text-gray-700 hover:text-black">
-          Dashboard
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+
+        {/* Logo */}
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 font-semibold text-gray-900 text-lg"
+        >
+          🍳 <span>ServeAI</span>
         </Link>
 
-        <Link href="/pantry" className="text-gray-700 hover:text-black">
-          Pantry
-        </Link>
+        {/* Navigation */}
+        <div className="flex items-center gap-2">
 
-        <Link href="/scan" className="text-gray-700 hover:text-black">
-          Scan
-        </Link>
+          {navLinks.map((link) => {
 
-        <Link href="/recipes" className="text-gray-700 hover:text-black">
-          Recipes
-        </Link>
+            const Icon = link.icon
+            const isActive = pathname === link.href
 
-        <Link href="/saved" className="text-gray-700 hover:text-black">
-          Library
-        </Link>
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
+                ${
+                  isActive
+                    ? "text-emerald-600 bg-emerald-50"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                }`}
+              >
 
-        <Link href="/history" className="text-gray-700 hover:text-black">
-          History
-        </Link>
+                <Icon size={16} />
 
-        <Link href="/settings" className="text-gray-700 hover:text-black">
-          Settings
-        </Link>
+                {link.name}
+
+                {isActive && (
+                  <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-emerald-500 rounded-full"/>
+                )}
+
+              </Link>
+            )
+          })}
+
+        </div>
 
       </div>
+
     </nav>
   )
 }
