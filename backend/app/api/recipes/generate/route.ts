@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { generateRecipesFromPantry } from "@/services/recipe.service"
+import { saveGeneratedRecipe } from "@/services/recipe.service"
 
 export async function POST(req: Request) {
   try {
@@ -17,13 +18,30 @@ export async function POST(req: Request) {
       )
     }
 
+    // Generate recipes
     const recipes = await generateRecipesFromPantry(userId)
+
+    const finalRecipes = []
+
+    for (const recipe of recipes) {
+
+      const updatedRecipe = {
+        ...recipe,
+        image: null
+      }
+
+      await saveGeneratedRecipe(userId, updatedRecipe)
+
+      finalRecipes.push(updatedRecipe)
+    }
 
     return NextResponse.json({
       success: true,
-      data: recipes,
+      data: finalRecipes,
     })
+
   } catch (error: any) {
+
     return NextResponse.json(
       {
         success: false,
@@ -31,5 +49,6 @@ export async function POST(req: Request) {
       },
       { status: 500 }
     )
+
   }
 }
