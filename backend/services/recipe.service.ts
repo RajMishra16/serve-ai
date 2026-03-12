@@ -6,6 +6,10 @@ import { v4 as uuidv4 } from "uuid"
 
 
 
+/* ---------------------------------
+   Generate Recipes From Pantry
+---------------------------------- */
+
 export async function generateRecipesFromPantry(
   userId: string
 ): Promise<Recipe[]> {
@@ -24,7 +28,7 @@ export async function generateRecipesFromPantry(
 
   const updatedRecipes = recipes.map((recipe: any) => {
 
-    const recipeIngredients = recipe.ingredients.map((ing: string) =>
+    const recipeIngredients = (recipe.ingredients || []).map((ing: string) =>
       ing.toLowerCase()
     )
 
@@ -33,9 +37,14 @@ export async function generateRecipesFromPantry(
     )
 
     return {
-      ...recipe,
       id: uuidv4(),
-      missingIngredients
+      title: recipe.title,
+      image: null,
+      ingredients: recipe.ingredients || [],
+      steps: recipe.steps || [],
+      missingIngredients,
+      cookTime: recipe.cookTime || 20,
+      difficulty: recipe.difficulty || "medium"
     }
   })
 
@@ -43,6 +52,10 @@ export async function generateRecipesFromPantry(
 }
 
 
+
+/* ---------------------------------
+   Generate Recipes From Ingredients
+---------------------------------- */
 
 export async function generateRecipesFromIngredients(
   ingredients: string[]
@@ -60,7 +73,7 @@ export async function generateRecipesFromIngredients(
 
   const updatedRecipes = recipes.map((recipe: any) => {
 
-    const recipeIngredients = recipe.ingredients.map((ing: string) =>
+    const recipeIngredients = (recipe.ingredients || []).map((ing: string) =>
       ing.toLowerCase()
     )
 
@@ -70,9 +83,14 @@ export async function generateRecipesFromIngredients(
     )
 
     return {
-      ...recipe,
       id: uuidv4(),
-      missingIngredients
+      title: recipe.title,
+      image: null,
+      ingredients: recipe.ingredients || [],
+      steps: recipe.steps || [],
+      missingIngredients,
+      cookTime: recipe.cookTime || 20,
+      difficulty: recipe.difficulty || "medium"
     }
   })
 
@@ -95,6 +113,7 @@ export async function saveGeneratedRecipe(
   const query = `
     INSERT INTO recipe_history (
       id,
+      generation_id,
       user_id,
       title,
       image,
@@ -103,11 +122,12 @@ export async function saveGeneratedRecipe(
       steps,
       cook_time,
       difficulty
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `
 
   await db.execute(query, [
     recipe.id,
+    recipe.generationId,
     userId,
     recipe.title,
     recipe.image,
@@ -124,15 +144,42 @@ export async function saveGeneratedRecipe(
 export async function getRecipeHistory(userId: string) {
 
   const query = `
-    SELECT id, title, image, created_at
+    SELECT
+      generation_id,
+      id,
+      title,
+      image,
+      cook_time,
+      difficulty,
+      created_at
     FROM recipe_history
     WHERE user_id = ?
     ORDER BY created_at DESC
   `
 
-  const [rows] = await db.execute(query, [userId])
+  const [rows]: any = await db.execute(query, [userId])
 
-  return rows
+  const generations: Record<string, any> = {}
+
+  for (const recipe of rows) {
+
+    if (!generations[recipe.generation_id]) {
+      generations[recipe.generation_id] = {
+        generationId: recipe.generation_id,
+        recipes: []
+      }
+    }
+
+    generations[recipe.generation_id].recipes.push({
+      id: recipe.id,
+      title: recipe.title,
+      image: recipe.image,
+      cookTime: recipe.cook_time,
+      difficulty: recipe.difficulty
+    })
+  }
+
+  return Object.values(generations)
 }
 
 
@@ -178,7 +225,7 @@ export async function getRecipeById(
     ingredients: parseJSON(recipe.ingredients),
     missingIngredients: parseJSON(recipe.missing_ingredients),
     steps: parseJSON(recipe.steps),
-    cookTime: recipe.cook_time,
-    difficulty: recipe.difficulty
+    cookTime: recipe.cook_time || 20,
+    difficulty: recipe.difficulty || "medium"
   }
 }

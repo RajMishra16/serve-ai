@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server"
 import { generateRecipesFromPantry } from "@/services/recipe.service"
 import { saveGeneratedRecipe } from "@/services/recipe.service"
+import { v4 as uuidv4 } from "uuid"
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json()
 
+  try {
+
+    const body = await req.json()
     const { userId } = body
 
     if (!userId) {
@@ -18,6 +20,9 @@ export async function POST(req: Request) {
       )
     }
 
+    // Create generation batch ID
+    const generationId = uuidv4()
+
     // Generate recipes
     const recipes = await generateRecipesFromPantry(userId)
 
@@ -27,7 +32,10 @@ export async function POST(req: Request) {
 
       const updatedRecipe = {
         ...recipe,
-        image: null
+        image: null,
+        cookTime: recipe.cookTime || 20,
+        difficulty: recipe.difficulty || "medium",
+        generationId
       }
 
       await saveGeneratedRecipe(userId, updatedRecipe)
@@ -37,6 +45,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
+      generationId,
       data: finalRecipes,
     })
 
