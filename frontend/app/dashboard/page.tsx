@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const [pantryCount, setPantryCount] = useState(0)
   const [savedRecipesCount, setSavedRecipesCount] = useState(0)
 
-  const recentRecipes: Recipe[] = []
+  const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([])
 
   useEffect(() => {
 
@@ -26,11 +26,18 @@ export default function DashboardPage() {
 
         const history = await getRecipeHistory()
 
-        const totalRecipes = history.reduce(
-          (count: number, generation: any) =>
-            count + (generation.recipes?.length || 0),
-          0
-        )
+const totalRecipes = history.reduce(
+  (count: number, generation: any) =>
+    count + (generation.recipes?.length || 0),
+  0
+)
+
+setSavedRecipesCount(totalRecipes)
+
+// get latest recipes
+if (history.length > 0 && history[0].recipes) {
+  setRecentRecipes(history[0].recipes.slice(0, 3))
+}
 
         setSavedRecipesCount(totalRecipes)
 
