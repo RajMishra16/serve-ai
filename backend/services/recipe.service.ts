@@ -5,27 +5,72 @@ import { getPantryItems } from "@/services/pantry.service"
 export async function generateRecipesFromPantry(
   userId: string
 ): Promise<Recipe[]> {
-  const pantryItems = await getPantryItems(userId)
 
-  const ingredients = pantryItems.map((item: any) => item.name)
+  // Get pantry items from database
+  const pantryItems = (await getPantryItems(userId)) as any[]
 
-  if (ingredients.length === 0) {
+  // Normalize pantry ingredients
+  const pantryIngredients = pantryItems.map((item: any) =>
+    item.name.toLowerCase()
+  )
+
+  if (pantryIngredients.length === 0) {
     throw new Error("Pantry is empty")
   }
 
-  const recipes = await generateRecipesAI(ingredients)
+  // Generate recipes using AI
+  const recipes = await generateRecipesAI(pantryIngredients)
 
-  return recipes
+  // Detect missing ingredients
+  const updatedRecipes = recipes.map((recipe: any) => {
+
+    const recipeIngredients = recipe.ingredients.map((ing: string) =>
+      ing.toLowerCase()
+    )
+
+    const missingIngredients = recipeIngredients.filter(
+      (ingredient: string) => !pantryIngredients.includes(ingredient)
+    )
+
+    return {
+      ...recipe,
+      missingIngredients
+    }
+  })
+
+  return updatedRecipes
 }
 
 export async function generateRecipesFromIngredients(
   ingredients: string[]
 ): Promise<Recipe[]> {
+
   if (!ingredients || ingredients.length === 0) {
     throw new Error("No ingredients provided")
   }
 
-  const recipes = await generateRecipesAI(ingredients)
+  const normalizedIngredients = ingredients.map((i) =>
+    i.toLowerCase()
+  )
 
-  return recipes
+  const recipes = await generateRecipesAI(normalizedIngredients)
+
+  const updatedRecipes = recipes.map((recipe: any) => {
+
+    const recipeIngredients = recipe.ingredients.map((ing: string) =>
+      ing.toLowerCase()
+    )
+
+    const missingIngredients = recipeIngredients.filter(
+      (ingredient: string) =>
+        !normalizedIngredients.includes(ingredient)
+    )
+
+    return {
+      ...recipe,
+      missingIngredients
+    }
+  })
+
+  return updatedRecipes
 }

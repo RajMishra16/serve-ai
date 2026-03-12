@@ -1,35 +1,40 @@
-import { Pool } from "pg";
+import mysql from "mysql2/promise";
 
 declare global {
-  var pgPool: Pool | undefined;
+  // allow global `mysqlPool`
+  var mysqlPool: mysql.Pool | undefined;
 }
 
 const pool =
-  global.pgPool ||
-  new Pool({
-    connectionString: process.env.DATABASE_URL!,
+  global.mysqlPool ||
+  mysql.createPool({
+    host: "localhost",
+    user: "root",
+    password: "root",
+    database: "serveai",
+    waitForConnections: true,
+    connectionLimit: 10,
   });
 
 if (process.env.NODE_ENV !== "production") {
-  global.pgPool = pool;
+  global.mysqlPool = pool;
 }
 
 export const db = pool;
-
 
 // Create pantry_items table if it does not exist
 async function createPantryTable() {
   try {
     await db.query(`
       CREATE TABLE IF NOT EXISTS pantry_items (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        name TEXT NOT NULL,
-        quantity TEXT NOT NULL,
+        id VARCHAR(36) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        quantity INT NOT NULL,
         confidence FLOAT,
-        added_via TEXT DEFAULT 'manual',
-        user_id TEXT NOT NULL,
+        added_via VARCHAR(50) DEFAULT 'manual',
+        user_id VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      )
     `);
 
     console.log("pantry_items table ready");

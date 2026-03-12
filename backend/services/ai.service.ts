@@ -6,30 +6,51 @@ export async function generateRecipesAI(
 ): Promise<Recipe[]> {
 
   const prompt = `
-You are a professional chef and recipe generator.
+You are a professional chef and recipe developer.
 
 Using the following pantry ingredients as the MAIN ingredients:
 
 ${ingredients.join(", ")}
 
-Generate 3 realistic home-style recipes.
+Generate 3 realistic home-style recipes that people would actually cook.
 
-Rules:
-- Use the pantry ingredients as primary ingredients.
-- You may add common kitchen ingredients if needed (salt, pepper, oil, butter, flour, sugar, spices).
-- Prefer real-world recipes people actually cook.
-- Avoid strange or unrealistic combinations.
+Important rules:
 
-Return ONLY valid JSON in this format:
+- Use the pantry ingredients as primary ingredients
+- You may add common kitchen staples if needed (salt, pepper, oil, butter, garlic, flour, sugar, spices)
+- Avoid strange or unrealistic combinations
+- Recipes should feel like real cookbook recipes
+
+Each recipe must include:
+
+- id (unique string)
+- title
+- ingredients (array of ingredients used)
+- cookTime (minutes)
+- difficulty (easy | medium | hard)
+- steps (detailed cooking instructions)
+
+Cooking step rules:
+
+- Each recipe must contain 5–8 steps
+- Steps should be clear and realistic
+- Mention cooking techniques (saute, boil, fry, bake, simmer, whisk)
+- Mention approximate times when relevant
+- Steps should feel like a real recipe from a cooking website
+
+Return ONLY valid JSON in this exact format:
 
 [
   {
-    "id": "string",
-    "title": "string",
-    "ingredients": ["string"],
-    "steps": ["string"],
-    "cookTime": number,
-    "difficulty": "easy | medium | hard"
+    "id": "recipe-1",
+    "title": "Recipe Name",
+    "ingredients": ["ingredient1","ingredient2"],
+    "steps": [
+      "Step 1 description",
+      "Step 2 description"
+    ],
+    "cookTime": 20,
+    "difficulty": "easy"
   }
 ]
 `
@@ -37,12 +58,12 @@ Return ONLY valid JSON in this format:
   const text = await generateText(prompt)
 
   try {
+
     const cleaned = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim()
 
-    // Extract JSON array safely
     const jsonStart = cleaned.indexOf("[")
     const jsonEnd = cleaned.lastIndexOf("]") + 1
 
@@ -70,8 +91,16 @@ Return ONLY a JSON array of ingredient names.
 Example:
 ["tomato","onion","egg","milk"]
 
-Do not return anything else.
+Rules:
+- Only ingredient names
+- Lowercase
+- No explanations
+- No extra text
 `
+
+  if (!process.env.OPENROUTER_API_KEY) {
+    throw new Error("OPENROUTER_API_KEY missing")
+  }
 
   const response = await fetch(
     "https://openrouter.ai/api/v1/chat/completions",
@@ -103,7 +132,6 @@ Do not return anything else.
 
   const data = await response.json()
 
-  // Safety check
   if (!data.choices || !data.choices.length) {
     console.error("OpenRouter error:", data)
     throw new Error("AI scan failed")
@@ -112,6 +140,7 @@ Do not return anything else.
   const text = data.choices[0].message.content
 
   try {
+
     const cleaned = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
@@ -124,15 +153,15 @@ Do not return anything else.
 
     const ingredients: string[] = JSON.parse(jsonString)
 
-// normalize ingredient names
-const normalized = ingredients.map(i =>
-  i.toLowerCase().trim()
-)
+    // normalize ingredient names
+    const normalized = ingredients.map(i =>
+      i.toLowerCase().trim()
+    )
 
-// remove duplicates
-const unique = [...new Set(normalized)]
+    // remove duplicates
+    const unique = [...new Set(normalized)]
 
-return unique
+    return unique
 
   } catch (error) {
     console.error("Failed to parse ingredient scan:", text)
