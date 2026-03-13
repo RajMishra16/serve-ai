@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import PageHeader from "@/components/ui/PageHeader";
 import RecipeGrid from "@/components/recipes/RecipeGrid";
 import { generateRecipes, getRecipeHistory } from "@/services/receipe.service";
@@ -10,17 +11,21 @@ import SkeletonCard from "@/components/ui/SkeletonCard"
 
 export default function RecipesPage() {
 
+  const { user, isLoaded } = useUser();
+
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Load recipe history when page loads
   useEffect(() => {
 
+    if (!isLoaded || !user) return;
+
     const loadHistory = async () => {
 
       try {
 
-        const history = await getRecipeHistory()
+        const history = await getRecipeHistory(user.id)
 
         if (Array.isArray(history) && history.length > 0) {
 
@@ -40,16 +45,18 @@ export default function RecipesPage() {
 
     loadHistory();
 
-  }, []);
+  }, [user, isLoaded]);
 
 
   const handleGenerateRecipes = async () => {
+
+    if (!user) return;
 
     try {
 
       setLoading(true)
 
-      const data = await generateRecipes()
+      const data = await generateRecipes(user.id)
 
       setRecipes(data)
 
@@ -97,35 +104,35 @@ export default function RecipesPage() {
         {/* Recipes Grid */}
         {loading ? (
 
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    <SkeletonCard />
-    <SkeletonCard />
-    <SkeletonCard />
-  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
 
-) : recipes.length > 0 ? (
+        ) : recipes.length > 0 ? (
 
-  <RecipeGrid recipes={recipes} />
+          <RecipeGrid recipes={recipes} />
 
-) : (
+        ) : (
 
-  <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500 shadow-sm">
+          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500 shadow-sm">
 
-  <div className="text-4xl mb-3">
-    🍳
-  </div>
+            <div className="text-4xl mb-3">
+              🍳
+            </div>
 
-  <p className="font-medium text-gray-700">
-    No recipes yet
-  </p>
+            <p className="font-medium text-gray-700">
+              No recipes yet
+            </p>
 
-  <p className="text-sm text-gray-500 mt-1">
-    Generate recipes using ingredients from your pantry.
-  </p>
+            <p className="text-sm text-gray-500 mt-1">
+              Generate recipes using ingredients from your pantry.
+            </p>
 
-</div>
+          </div>
 
-)}
+        )}
 
       </div>
 

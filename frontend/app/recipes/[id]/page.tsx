@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import PageHeader from "@/components/ui/PageHeader";
 import RecipeMeta from "@/components/recipes/RecipeMeta";
 import RecipeIngredients from "@/components/recipes/RecipeIngredients";
@@ -9,22 +10,28 @@ import RecipeSteps from "@/components/recipes/RecipeSteps";
 import { getRecipeById } from "@/services/receipe.service";
 import { Recipe } from "@/types/Recipe";
 
-
 export default function RecipeDetailPage() {
 
   const params = useParams();
   const id = params.id as string;
 
+  const { user, isLoaded } = useUser();
+
   const [recipe, setRecipe] = useState<Recipe | null>(null);
 
   useEffect(() => {
+
+    if (!isLoaded || !user) return;
 
     const fetchRecipe = async () => {
 
       try {
 
-        const data = await getRecipeById(id);
-        setRecipe(data);
+        const data = await getRecipeById(id, user.id);
+
+        if (data) {
+          setRecipe(data);
+        }
 
       } catch (error) {
         console.error("Failed to fetch recipe:", error);
@@ -34,7 +41,7 @@ export default function RecipeDetailPage() {
 
     fetchRecipe();
 
-  }, [id]);
+  }, [id, user, isLoaded]);
 
   if (!recipe) {
     return (

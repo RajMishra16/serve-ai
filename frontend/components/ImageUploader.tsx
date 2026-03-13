@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useUser } from "@clerk/nextjs"
 import { scanImage } from "@/services/scan.service"
 import { ScanIngredient } from "@/types/ScanIngredient"
 import { Upload, Camera } from "lucide-react"
@@ -10,10 +11,14 @@ interface Props {
 }
 
 export default function ImageUploader({ onScanComplete }: Props) {
+
+  const { user, isLoaded } = useUser()
+
   const [preview, setPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+
     const file = event.target.files?.[0]
 
     if (!file) return
@@ -21,23 +26,38 @@ export default function ImageUploader({ onScanComplete }: Props) {
     const reader = new FileReader()
 
     reader.onloadend = async () => {
+
       const base64 = reader.result as string
+
       setPreview(base64)
 
       try {
+
+        if (!isLoaded || !user) {
+          console.error("User not loaded yet")
+          return
+        }
+
         setLoading(true)
 
-        const ingredients = await scanImage(base64)
+        const ingredients = await scanImage(base64, user.id)
 
         onScanComplete(ingredients)
+
       } catch (error) {
+
         console.error("Scan failed:", error)
+
       } finally {
+
         setLoading(false)
+
       }
+
     }
 
     reader.readAsDataURL(file)
+
   }
 
   return (
@@ -64,6 +84,7 @@ export default function ImageUploader({ onScanComplete }: Props) {
           onChange={handleFileChange}
           className="hidden"
         />
+
       </label>
 
       {/* Image Preview */}
@@ -84,6 +105,7 @@ export default function ImageUploader({ onScanComplete }: Props) {
           Scanning ingredients...
         </div>
       )}
+
     </div>
   )
 }

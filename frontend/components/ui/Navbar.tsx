@@ -12,17 +12,12 @@ import {
   Settings
 } from "lucide-react"
 
-import {
-  SignedIn,
-  SignedOut,
-  UserButton,
-  SignInButton,
-  SignUpButton
-} from "@clerk/nextjs"
+import { UserButton, SignInButton, SignUpButton, useUser } from "@clerk/nextjs"
 
 export default function Navbar() {
 
   const pathname = usePathname()
+  const { isSignedIn } = useUser()
 
   const navLinks = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -39,7 +34,6 @@ export default function Navbar() {
 
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
-        {/* Logo */}
         <Link
           href="/dashboard"
           className="flex items-center gap-2 font-semibold text-gray-900 text-lg"
@@ -47,10 +41,8 @@ export default function Navbar() {
           🍳 <span>ServeAI</span>
         </Link>
 
-        {/* Navigation + Auth */}
         <div className="flex items-center gap-4">
 
-          {/* Navigation */}
           <div className="flex items-center gap-2">
 
             {navLinks.map((link) => {
@@ -86,8 +78,9 @@ export default function Navbar() {
 
           {/* Auth Controls */}
 
-          <SignedOut>
+          {!isSignedIn ? (
             <div className="flex items-center gap-3">
+
               <SignInButton mode="modal">
                 <button className="text-sm font-medium text-gray-600 hover:text-gray-900">
                   Sign In
@@ -99,12 +92,11 @@ export default function Navbar() {
                   Sign Up
                 </button>
               </SignUpButton>
-            </div>
-          </SignedOut>
 
-          <SignedIn>
+            </div>
+          ) : (
             <UserButton />
-          </SignedIn>
+          )}
 
         </div>
 

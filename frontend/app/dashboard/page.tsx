@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useUser } from "@clerk/nextjs"
 import PageHeader from "@/components/ui/PageHeader"
 import QuickActionCard from "@/components/dashboard/QuickActionCard"
 import StatsCard from "@/components/dashboard/StatsCard"
@@ -11,59 +12,58 @@ import { getRecipeHistory } from "@/services/receipe.service"
 
 export default function DashboardPage() {
 
+  const { user, isLoaded } = useUser()
+
   const [pantryCount, setPantryCount] = useState(0)
   const [savedRecipesCount, setSavedRecipesCount] = useState(0)
-
   const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([])
 
   useEffect(() => {
 
+    if (!isLoaded || !user) return
+
     const fetchDashboardData = async () => {
+
       try {
 
-        const pantryItems = await getPantryItems()
+        const pantryItems = await getPantryItems(user.id)
         setPantryCount(pantryItems.length)
 
-        const history = await getRecipeHistory()
+        const history = await getRecipeHistory(user.id)
 
-const totalRecipes = history.reduce(
-  (count: number, generation: any) =>
-    count + (generation.recipes?.length || 0),
-  0
-)
-
-setSavedRecipesCount(totalRecipes)
-
-// get latest recipes
-if (history.length > 0 && history[0].recipes) {
-  setRecentRecipes(history[0].recipes.slice(0, 3))
-}
+        const totalRecipes = history.reduce(
+          (count: number, generation: any) =>
+            count + (generation.recipes?.length || 0),
+          0
+        )
 
         setSavedRecipesCount(totalRecipes)
+
+        if (history.length > 0 && history[0].recipes) {
+          setRecentRecipes(history[0].recipes.slice(0, 3))
+        }
 
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error)
       }
+
     }
 
     fetchDashboardData()
 
-  }, [])
+  }, [user, isLoaded])
 
   return (
     <div className="min-h-screen bg-gray-50">
 
       <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
 
-        {/* Header */}
         <PageHeader
           title="Dashboard"
           subtitle="Manage your pantry and generate AI-powered recipes"
         />
 
-        {/* Welcome Card */}
         <div className="rounded-2xl p-8 bg-gradient-to-r from-emerald-500 to-green-400 text-white shadow-lg">
-
           <h2 className="text-2xl font-semibold mb-2">
             Welcome to ServeAI
           </h2>
@@ -71,10 +71,8 @@ if (history.length > 0 && history[0].recipes) {
           <p className="text-sm text-white/90">
             Turn the ingredients in your kitchen into delicious recipes with AI.
           </p>
-
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           <StatsCard
@@ -89,7 +87,6 @@ if (history.length > 0 && history[0].recipes) {
 
         </div>
 
-        {/* Quick Actions */}
         <div className="space-y-4">
 
           <h2 className="text-lg font-semibold text-gray-900">
@@ -120,7 +117,6 @@ if (history.length > 0 && history[0].recipes) {
 
         </div>
 
-        {/* Recent Recipes */}
         <div className="space-y-4">
 
           <h2 className="text-lg font-semibold text-gray-900">

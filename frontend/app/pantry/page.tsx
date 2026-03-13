@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import PantryGrid from "@/components/ui/PantryGrid";
 import IngredientForm from "@/components/IngredientForm";
 import { PantryItem } from "@/types/PantryItem";
@@ -13,6 +14,8 @@ import {
 import PageHeader from "@/components/ui/PageHeader";
 
 export default function PantryPage() {
+  const { user } = useUser();
+
   const [items, setItems] = useState<PantryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -20,7 +23,7 @@ export default function PantryPage() {
 
   const handleAddIngredient = async (data: { name: string; quantity: number }) => {
     try {
-      const newItem = await addPantryItem(data);
+      const newItem = await addPantryItem(user?.id as string, data);
       setItems((prev) => [...prev, newItem]);
       setShowForm(false);
     } catch (error) {
@@ -30,7 +33,7 @@ export default function PantryPage() {
 
   const handleDeleteIngredient = async (id: string) => {
     try {
-      await deletePantryItem(id);
+      await deletePantryItem(user?.id as string, id);
       setItems((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       console.error("Error deleting ingredient:", error);
@@ -46,7 +49,11 @@ export default function PantryPage() {
     if (!editingItem) return;
 
     try {
-      const updatedItem = await updatePantryItem(editingItem.id, data);
+      const updatedItem = await updatePantryItem(
+        user?.id as string,
+        editingItem.id,
+        data
+      );
 
       setItems((prev) =>
         prev.map((item) => (item.id === editingItem.id ? updatedItem : item))
@@ -61,8 +68,10 @@ export default function PantryPage() {
 
   useEffect(() => {
     const fetchItems = async () => {
+      if (!user?.id) return;
+
       try {
-        const data = await getPantryItems();
+        const data = await getPantryItems(user.id);
         setItems(data);
       } catch (error) {
         console.error("Error fetching pantry items:", error);
@@ -72,7 +81,7 @@ export default function PantryPage() {
     };
 
     fetchItems();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (
@@ -84,7 +93,6 @@ export default function PantryPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-
       <div className="max-w-6xl mx-auto px-6 py-10 space-y-8">
 
         <PageHeader
@@ -92,7 +100,6 @@ export default function PantryPage() {
           subtitle="Manage ingredients available in your kitchen"
         />
 
-        {/* Add Ingredient Button */}
         <div className="flex justify-end">
           <button
             onClick={() => setShowForm(true)}
@@ -102,7 +109,6 @@ export default function PantryPage() {
           </button>
         </div>
 
-        {/* Ingredient Form */}
         {showForm && (
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <IngredientForm
@@ -116,7 +122,6 @@ export default function PantryPage() {
           </div>
         )}
 
-        {/* Pantry Grid */}
         <PantryGrid
           items={items}
           onEdit={handleEditIngredient}
@@ -124,7 +129,6 @@ export default function PantryPage() {
         />
 
       </div>
-
     </div>
   );
 }
