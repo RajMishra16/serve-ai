@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 import { getLibraryRecipeById } from "@/services/library.service"
 
-export async function GET(req: Request) {
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
 
-    const url = new URL(req.url)
-
-    const pathParts = url.pathname.split("/")
-    const recipeId = pathParts[pathParts.length - 1]
+    const recipeId = params.id
 
     if (!recipeId) {
       return NextResponse.json(

@@ -2,29 +2,20 @@ import { NextResponse } from "next/server"
 import { generateRecipesFromPantry } from "@/services/recipe.service"
 import { saveGeneratedRecipe } from "@/services/recipe.service"
 import { v4 as uuidv4 } from "uuid"
+import { auth } from "@clerk/nextjs/server"
 
 export async function POST(req: Request) {
 
   try {
 
-    const body = await req.json()
-    const { userId } = body
-
-    if (!userId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "userId is required",
-        },
-        { status: 400 }
-      )
-    }
+    const authData = await auth()
+    const finalUserId = authData?.userId ?? "test-user"
 
     // Create generation batch ID
     const generationId = uuidv4()
 
     // Generate recipes
-    const recipes = await generateRecipesFromPantry(userId)
+    const recipes = await generateRecipesFromPantry(finalUserId)
 
     const finalRecipes = []
 
@@ -38,7 +29,7 @@ export async function POST(req: Request) {
         generationId
       }
 
-      await saveGeneratedRecipe(userId, updatedRecipe)
+      await saveGeneratedRecipe(finalUserId, updatedRecipe)
 
       finalRecipes.push(updatedRecipe)
     }

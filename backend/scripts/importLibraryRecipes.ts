@@ -1,10 +1,18 @@
-import { db } from "@/lib/db"
-import recipes from "../data/libraryRecipes.json"
+import fs from "fs";
+import path from "path";
 
 async function importRecipes() {
   try {
 
-    for (const recipe of recipes as any[]) {
+    // dynamic import to avoid ts-node module resolution issues
+    const { db } = await import("../lib/db");
+
+    const filePath = path.join(process.cwd(), "data", "libraryRecipes.json");
+
+    const file = fs.readFileSync(filePath, "utf-8");
+    const recipes = JSON.parse(file);
+
+    for (const recipe of recipes) {
 
       const query = `
         INSERT INTO recipe_library (
@@ -31,7 +39,7 @@ async function importRecipes() {
         steps = VALUES(steps),
         cook_time = VALUES(cook_time),
         difficulty = VALUES(difficulty)
-      `
+      `;
 
       await db.execute(query, [
         recipe.id,
@@ -44,18 +52,18 @@ async function importRecipes() {
         JSON.stringify(recipe.steps),
         recipe.cook_time,
         recipe.difficulty
-      ])
+      ]);
 
-      console.log("Upserted:", recipe.title)
+      console.log("Upserted:", recipe.title);
     }
 
-    console.log("All recipes imported successfully")
-    process.exit(0)
+    console.log("All recipes imported successfully");
+    process.exit(0);
 
   } catch (error) {
-    console.error("Import failed:", error)
-    process.exit(1)
+    console.error("Import failed:", error);
+    process.exit(1);
   }
 }
 
-importRecipes()
+importRecipes();

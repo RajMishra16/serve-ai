@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server"
 import { getRecipeById } from "@/services/recipe.service"
 import { db } from "@/lib/db"
-
-
+import { auth } from "@clerk/nextjs/server"
 
 export async function GET(req: Request) {
   try {
 
-    const url = new URL(req.url)
+    const authData = await auth()
+const userId = authData?.userId ?? new URL(req.url).searchParams.get("userId")
 
-    const userId = url.searchParams.get("userId")
+    const url = new URL(req.url)
 
     // extract id from URL path
     const pathParts = url.pathname.split("/")
@@ -19,9 +19,9 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "userId is required",
+          error: "Unauthorized",
         },
-        { status: 400 }
+        { status: 401 }
       )
     }
 
@@ -55,23 +55,21 @@ export async function GET(req: Request) {
   }
 }
 
-
-
 export async function DELETE(req: Request) {
-
   try {
 
-    const url = new URL(req.url)
+    const authData = await auth()
+const userId = authData?.userId ?? new URL(req.url).searchParams.get("userId")
 
-    const userId = url.searchParams.get("userId")
+    const url = new URL(req.url)
 
     const pathParts = url.pathname.split("/")
     const recipeId = pathParts[pathParts.length - 1]
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: "userId required" },
-        { status: 400 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
       )
     }
 

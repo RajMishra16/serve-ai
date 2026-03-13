@@ -1,7 +1,5 @@
 import { db } from "@/lib/db"
 
-
-
 export async function getLibraryRecipes() {
 
   const query = `
@@ -10,7 +8,7 @@ export async function getLibraryRecipes() {
     ORDER BY title ASC
   `
 
-  const [rows] = await db.execute(query)
+  const [rows]: any = await db.execute(query)
 
   return rows
 }

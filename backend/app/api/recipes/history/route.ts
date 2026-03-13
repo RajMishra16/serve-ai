@@ -1,23 +1,14 @@
 import { NextResponse } from "next/server"
 import { getRecipeHistory } from "@/services/recipe.service"
+import { auth } from "@clerk/nextjs/server"
 
 export async function GET(req: Request) {
   try {
 
-    const { searchParams } = new URL(req.url)
-    const userId = searchParams.get("userId")
+    const authData = await auth()
+    const finalUserId = authData?.userId ?? "test-user"
 
-    if (!userId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "userId is required",
-        },
-        { status: 400 }
-      )
-    }
-
-    const recipes = await getRecipeHistory(userId)
+    const recipes = await getRecipeHistory(finalUserId)
 
     return NextResponse.json({
       success: true,
