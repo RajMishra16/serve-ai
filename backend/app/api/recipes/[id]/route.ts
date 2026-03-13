@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server"
 import { getRecipeById } from "@/services/recipe.service"
 import { db } from "@/lib/db"
-import { auth } from "@clerk/nextjs/server"
 
 export async function GET(req: Request) {
-  try {
 
-    const authData = await auth()
-const userId = authData?.userId ?? new URL(req.url).searchParams.get("userId")
+  try {
 
     const url = new URL(req.url)
 
-    // extract id from URL path
+    const userId = url.searchParams.get("userId")
+
     const pathParts = url.pathname.split("/")
     const recipeId = pathParts[pathParts.length - 1]
 
@@ -19,9 +17,9 @@ const userId = authData?.userId ?? new URL(req.url).searchParams.get("userId")
       return NextResponse.json(
         {
           success: false,
-          error: "Unauthorized",
+          error: "userId required"
         },
-        { status: 401 }
+        { status: 400 }
       )
     }
 
@@ -29,7 +27,7 @@ const userId = authData?.userId ?? new URL(req.url).searchParams.get("userId")
       return NextResponse.json(
         {
           success: false,
-          error: "recipeId is required",
+          error: "recipeId required"
         },
         { status: 400 }
       )
@@ -44,6 +42,8 @@ const userId = authData?.userId ?? new URL(req.url).searchParams.get("userId")
 
   } catch (error: any) {
 
+    console.error("GET RECIPE ERROR:", error)
+
     return NextResponse.json(
       {
         success: false,
@@ -53,23 +53,26 @@ const userId = authData?.userId ?? new URL(req.url).searchParams.get("userId")
     )
 
   }
+
 }
 
+
+
 export async function DELETE(req: Request) {
+
   try {
 
-    const authData = await auth()
-const userId = authData?.userId ?? new URL(req.url).searchParams.get("userId")
-
     const url = new URL(req.url)
+
+    const userId = url.searchParams.get("userId")
 
     const pathParts = url.pathname.split("/")
     const recipeId = pathParts[pathParts.length - 1]
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
+        { success: false, error: "userId required" },
+        { status: 400 }
       )
     }
 
@@ -94,10 +97,13 @@ const userId = authData?.userId ?? new URL(req.url).searchParams.get("userId")
 
   } catch (error) {
 
+    console.error("DELETE RECIPE ERROR:", error)
+
     return NextResponse.json(
       { success: false, error: "Failed to delete recipe" },
       { status: 500 }
     )
 
   }
+
 }

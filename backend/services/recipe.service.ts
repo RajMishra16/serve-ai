@@ -5,7 +5,6 @@ import { db } from "@/lib/db"
 import { v4 as uuidv4 } from "uuid"
 
 
-
 /* ---------------------------------
    Generate Recipes From Pantry
 ---------------------------------- */
@@ -14,7 +13,7 @@ export async function generateRecipesFromPantry(
   userId: string
 ): Promise<Recipe[]> {
 
-  const pantryItems = (await getPantryItems(userId)) as any[]
+  const pantryItems = await getPantryItems(userId)
 
   const pantryIngredients = pantryItems.map((item: any) =>
     item.name.toLowerCase()
@@ -100,10 +99,8 @@ export async function generateRecipesFromIngredients(
 
 
 /* -----------------------------
-   DAY 4 FUNCTIONS
+   SAVE GENERATED RECIPE
 -------------------------------- */
-
-
 
 export async function saveGeneratedRecipe(
   userId: string,
@@ -141,91 +138,123 @@ export async function saveGeneratedRecipe(
 
 
 
+/* -----------------------------
+   GET RECIPE HISTORY
+-------------------------------- */
+
 export async function getRecipeHistory(userId: string) {
 
-  const query = `
-    SELECT
-      generation_id,
-      id,
-      title,
-      image,
-      cook_time,
-      difficulty,
-      created_at
-    FROM recipe_history
-    WHERE user_id = ?
-    ORDER BY created_at DESC
-  `
+  try {
 
-  const [rows]: any = await db.execute(query, [userId])
+    const query = `
+      SELECT
+        generation_id,
+        id,
+        title,
+        image,
+        cook_time,
+        difficulty,
+        created_at
+      FROM recipe_history
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `
 
-  const generations: Record<string, any> = {}
+    const [rows]: any = await db.execute(query, [userId])
 
-  for (const recipe of rows) {
-
-    if (!generations[recipe.generation_id]) {
-      generations[recipe.generation_id] = {
-        generationId: recipe.generation_id,
-        recipes: []
-      }
+    if (!rows || rows.length === 0) {
+      return []
     }
 
-    generations[recipe.generation_id].recipes.push({
-      id: recipe.id,
-      title: recipe.title,
-      image: recipe.image,
-      cookTime: recipe.cook_time,
-      difficulty: recipe.difficulty
-    })
-  }
+    const generations: Record<string, any> = {}
 
-  return Object.values(generations)
+    for (const recipe of rows) {
+
+      const generationId = recipe.generation_id || "default"
+
+      if (!generations[generationId]) {
+        generations[generationId] = {
+          generationId: generationId,
+          recipes: []
+        }
+      }
+
+      generations[generationId].recipes.push({
+        id: recipe.id,
+        title: recipe.title,
+        image: recipe.image,
+        cookTime: recipe.cook_time,
+        difficulty: recipe.difficulty
+      })
+    }
+
+    return Object.values(generations)
+
+  } catch (error) {
+
+    console.error("Error fetching recipe history:", error)
+    throw new Error("Failed to fetch recipe history")
+
+  }
 }
 
 
+
+/* -----------------------------
+   GET RECIPE BY ID
+-------------------------------- */
 
 export async function getRecipeById(
   userId: string,
   recipeId: string
 ) {
 
-  const query = `
-    SELECT *
-    FROM recipe_history
-    WHERE id = ? AND user_id = ?
-    LIMIT 1
-  `
+  try {
 
-  const [rows]: any = await db.execute(query, [
-    recipeId,
-    userId
-  ])
+    const query = `
+      SELECT *
+      FROM recipe_history
+      WHERE id = ? AND user_id = ?
+      LIMIT 1
+    `
 
-  if (!rows.length) {
-    throw new Error("Recipe not found")
-  }
+    const [rows]: any = await db.execute(query, [
+      recipeId,
+      userId
+    ])
 
-  const recipe = rows[0]
-
-  const parseJSON = (value: any) => {
-    try {
-      if (typeof value === "string") {
-        return JSON.parse(value)
-      }
-      return value
-    } catch {
-      return value
+    if (!rows || rows.length === 0) {
+      throw new Error("Recipe not found")
     }
-  }
 
-  return {
-    id: recipe.id,
-    title: recipe.title,
-    image: recipe.image,
-    ingredients: parseJSON(recipe.ingredients),
-    missingIngredients: parseJSON(recipe.missing_ingredients),
-    steps: parseJSON(recipe.steps),
-    cookTime: recipe.cook_time || 20,
-    difficulty: recipe.difficulty || "medium"
+    const recipe = rows[0]
+
+    const parseJSON = (value: any) => {
+      try {
+        if (typeof value === "string") {
+          return JSON.parse(value)
+        }
+        return value
+      } catch {
+        return value
+      }
+    }
+
+    return {
+      id: recipe.id,
+      title: recipe.title,
+      image: recipe.image,
+      ingredients: parseJSON(recipe.ingredients),
+      missingIngredients: parseJSON(recipe.missing_ingredients),
+      steps: parseJSON(recipe.steps),
+      cookTime: recipe.cook_time || 20,
+      difficulty: recipe.difficulty || "medium"
+    }
+
+  } catch (error) {
+
+    console.error("Error fetching recipe by id:", error)
+    throw new Error("Failed to fetch recipe")
+
   }
 }

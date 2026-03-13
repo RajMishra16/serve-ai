@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getPantryItems, addPantryItem } from "@/services/pantry.service";
-import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 
 const pantrySchema = z.object({
@@ -8,22 +7,32 @@ const pantrySchema = z.object({
   quantity: z.number().min(1),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const authData = await auth();
-    const finalUserId = authData?.userId ?? "test-user";
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
 
-    const items = await getPantryItems(finalUserId);
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "userId missing" },
+        { status: 400 }
+      );
+    }
+
+    const items = await getPantryItems(userId);
 
     return NextResponse.json({
       success: true,
-      data: items,
+      data: items ?? [],
     });
-  } catch (error) {
-    console.error("Pantry GET error:", error);
+  } catch (error: any) {
+    console.error("PANTRY GET ERROR:", error);
 
     return NextResponse.json(
-      { success: false, error: "Failed to fetch pantry items" },
+      {
+        success: false,
+        error: error.message || "Failed to fetch pantry items",
+      },
       { status: 500 }
     );
   }
@@ -31,9 +40,6 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const authData = await auth();
-    const finalUserId = authData?.userId ?? "test-user";
-
     const body = await req.json();
 
     const parsed = pantrySchema.safeParse(body);
@@ -45,9 +51,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, quantity } = parsed.data;
+    const { name, quantity, userId } = body;
 
-    const newItem = await addPantryItem(finalUserId, {
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "userId missing" },
+        { status: 400 }
+      );
+    }
+
+    const newItem = await addPantryItem(userId, {
       name,
       quantity,
     });
@@ -56,11 +69,14 @@ export async function POST(req: Request) {
       success: true,
       data: newItem,
     });
-  } catch (error) {
-    console.error("Pantry POST error:", error);
+  } catch (error: any) {
+    console.error("PANTRY POST ERROR:", error);
 
     return NextResponse.json(
-      { success: false, error: "Failed to add pantry item" },
+      {
+        success: false,
+        error: error.message || "Failed to add pantry item",
+      },
       { status: 500 }
     );
   }

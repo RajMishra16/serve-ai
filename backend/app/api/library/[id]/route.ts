@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server"
 import { getLibraryRecipeById } from "@/services/library.service"
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request) {
+
   try {
 
-    const recipeId = params.id
+    const url = new URL(req.url)
+
+    const pathParts = url.pathname.split("/")
+    const recipeId = pathParts[pathParts.length - 1]
 
     if (!recipeId) {
       return NextResponse.json(
         {
           success: false,
-          error: "recipeId is required",
+          error: "recipeId is required"
         },
         { status: 400 }
       )
@@ -28,6 +29,8 @@ export async function GET(
 
   } catch (error: any) {
 
+    console.error("LIBRARY RECIPE ERROR:", error)
+
     return NextResponse.json(
       {
         success: false,
@@ -37,4 +40,5 @@ export async function GET(
     )
 
   }
+
 }
