@@ -12,6 +12,14 @@ import {
   Settings
 } from "lucide-react"
 
+import {
+  SignedIn,
+  SignedOut,
+  UserButton,
+  SignInButton,
+  SignUpButton
+} from "@clerk/nextjs"
+
 export default function Navbar() {
 
   const pathname = usePathname()
@@ -39,37 +47,64 @@ export default function Navbar() {
           🍳 <span>ServeAI</span>
         </Link>
 
-        {/* Navigation */}
-        <div className="flex items-center gap-2">
+        {/* Navigation + Auth */}
+        <div className="flex items-center gap-4">
 
-          {navLinks.map((link) => {
+          {/* Navigation */}
+          <div className="flex items-center gap-2">
 
-            const Icon = link.icon
-            const isActive = pathname === link.href
+            {navLinks.map((link) => {
 
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
-                ${
-                  isActive
-                    ? "text-emerald-600 bg-emerald-50"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-              >
+              const Icon = link.icon
+              const isActive = pathname === link.href
 
-                <Icon size={16} />
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
+                  ${
+                    isActive
+                      ? "text-emerald-600 bg-emerald-50"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                >
 
-                {link.name}
+                  <Icon size={16} />
 
-                {isActive && (
-                  <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-emerald-500 rounded-full"/>
-                )}
+                  {link.name}
 
-              </Link>
-            )
-          })}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-emerald-500 rounded-full"/>
+                  )}
+
+                </Link>
+              )
+            })}
+
+          </div>
+
+          {/* Auth Controls */}
+
+          <SignedOut>
+            <div className="flex items-center gap-3">
+              <SignInButton mode="modal">
+                <button className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                  Sign In
+                </button>
+              </SignInButton>
+
+              <SignUpButton mode="modal">
+                <button className="text-sm font-medium bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition">
+                  Sign Up
+                </button>
+              </SignUpButton>
+            </div>
+          </SignedOut>
+
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
 
         </div>
 
