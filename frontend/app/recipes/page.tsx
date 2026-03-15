@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import PageHeader from "@/components/ui/PageHeader";
 import RecipeGrid from "@/components/recipes/RecipeGrid";
+import AnimatedBackground from "@/components/ui/AnimatedBackground";
 import { generateRecipes, getRecipeHistory } from "@/services/receipe.service";
 import { Recipe } from "@/types/Recipe";
 import { Sparkles } from "lucide-react";
-import SkeletonCard from "@/components/ui/SkeletonCard"
+import SkeletonCard from "@/components/ui/SkeletonCard";
 
 export default function RecipesPage() {
 
@@ -16,7 +17,8 @@ export default function RecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Load recipe history when page loads
+  /* Load recipe history */
+
   useEffect(() => {
 
     if (!isLoaded || !user) return;
@@ -25,14 +27,14 @@ export default function RecipesPage() {
 
       try {
 
-        const history = await getRecipeHistory(user.id)
+        const history = await getRecipeHistory(user.id);
 
         if (Array.isArray(history) && history.length > 0) {
 
-          const latestGeneration = history[0]
+          const latestGeneration = history[0];
 
           if (latestGeneration.recipes) {
-            setRecipes(latestGeneration.recipes)
+            setRecipes(latestGeneration.recipes);
           }
 
         }
@@ -48,60 +50,83 @@ export default function RecipesPage() {
   }, [user, isLoaded]);
 
 
+  /* Generate Recipes */
+
   const handleGenerateRecipes = async () => {
 
     if (!user) return;
 
     try {
 
-      setLoading(true)
+      setLoading(true);
 
-      const data = await generateRecipes(user.id)
+      const data = await generateRecipes(user.id);
 
-      setRecipes(data)
+      setRecipes(data);
 
     } catch (error) {
 
-      console.error("Failed to generate recipes:", error)
+      console.error("Failed to generate recipes:", error);
 
     } finally {
 
-      setLoading(false)
+      setLoading(false);
 
     }
 
-  }
+  };
+
 
   return (
 
-    <div className="bg-gray-50 min-h-screen">
+    <div className="relative bg-gray-50 min-h-screen overflow-hidden">
 
-      <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
+      <AnimatedBackground />
+
+      <div className="relative max-w-6xl mx-auto px-6 py-10 space-y-10">
 
         <PageHeader
           title="Recipes"
           subtitle="Generate recipes from your pantry ingredients"
         />
 
-        {/* Generate Section */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col items-center gap-4">
 
-          <Sparkles className="w-6 h-6 text-emerald-600" />
+        {/* Generate Recipes Panel */}
 
-          <p className="text-gray-600 text-sm text-center">
-            Use your pantry ingredients to generate AI-powered recipes.
+        <div className="relative bg-white border border-gray-200 rounded-2xl p-8 shadow-sm flex flex-col items-center gap-4 overflow-hidden transition hover:shadow-lg duration-300">
+
+          <div className="absolute -top-12 left-20 w-32 h-32 bg-emerald-300/20 blur-3xl rounded-full"></div>
+          <div className="absolute -bottom-12 right-20 w-32 h-32 bg-green-300/20 blur-3xl rounded-full"></div>
+
+          <Sparkles className="w-7 h-7 text-emerald-600" />
+
+          <p className="text-gray-600 text-sm text-center max-w-md">
+            Use your pantry ingredients to generate AI-powered recipes instantly.
           </p>
 
           <button
             onClick={handleGenerateRecipes}
-            className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-emerald-700 transition"
+            className="
+            bg-emerald-600
+            text-white
+            px-6
+            py-2.5
+            rounded-lg
+            font-medium
+            hover:bg-emerald-700
+            hover:scale-[1.03]
+            transition
+            shadow-sm
+            "
           >
             {loading ? "Generating Recipes..." : "Generate Recipes"}
           </button>
 
         </div>
 
+
         {/* Recipes Grid */}
+
         {loading ? (
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -116,19 +141,26 @@ export default function RecipesPage() {
 
         ) : (
 
-          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500 shadow-sm">
+          <div className="relative bg-white border border-gray-200 rounded-2xl p-12 text-center text-gray-500 shadow-sm overflow-hidden">
 
-            <div className="text-4xl mb-3">
-              🍳
+            <div className="absolute -top-10 left-10 w-32 h-32 bg-emerald-300/20 blur-3xl rounded-full"></div>
+            <div className="absolute -bottom-10 right-10 w-32 h-32 bg-green-300/20 blur-3xl rounded-full"></div>
+
+            <div className="relative">
+
+              <div className="text-4xl mb-3">
+                🍳
+              </div>
+
+              <p className="font-medium text-gray-700">
+                No recipes yet
+              </p>
+
+              <p className="text-sm text-gray-500 mt-1">
+                Generate recipes using ingredients from your pantry.
+              </p>
+
             </div>
-
-            <p className="font-medium text-gray-700">
-              No recipes yet
-            </p>
-
-            <p className="text-sm text-gray-500 mt-1">
-              Generate recipes using ingredients from your pantry.
-            </p>
 
           </div>
 

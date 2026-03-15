@@ -7,6 +7,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import RecipeMeta from "@/components/recipes/RecipeMeta";
 import RecipeIngredients from "@/components/recipes/RecipeIngredients";
 import RecipeSteps from "@/components/recipes/RecipeSteps";
+import AnimatedBackground from "@/components/ui/AnimatedBackground";
 import { getRecipeById } from "@/services/receipe.service";
 import { Recipe } from "@/types/Recipe";
 
@@ -43,26 +44,50 @@ export default function RecipeDetailPage() {
 
   }, [id, user, isLoaded]);
 
+  /* Loading Screen */
+
   if (!recipe) {
     return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 text-lg">Loading recipe...</p>
+      <div className="relative bg-gray-50 min-h-screen flex items-center justify-center overflow-hidden">
+
+        <AnimatedBackground />
+
+        <div className="text-center relative">
+
+          <div className="text-4xl mb-3 animate-pulse">
+            🍳
+          </div>
+
+          <p className="text-gray-500 text-lg">
+            Loading recipe...
+          </p>
+
+        </div>
+
       </div>
     );
   }
 
   return (
 
-    <div className="bg-gray-50 min-h-screen">
+    <div className="relative bg-gray-50 min-h-screen overflow-hidden">
 
-      <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
+      <AnimatedBackground />
+
+      <div className="relative max-w-6xl mx-auto px-6 py-10 space-y-10">
 
         {/* Title */}
         <PageHeader title={recipe.title} />
 
         {/* Meta */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <RecipeMeta recipe={recipe} />
+        <div className="relative bg-white border border-gray-200 rounded-2xl p-6 shadow-sm overflow-hidden transition hover:shadow-lg duration-300">
+
+          <div className="absolute -top-10 left-10 w-28 h-28 bg-emerald-300/20 blur-3xl rounded-full"></div>
+
+          <div className="relative">
+            <RecipeMeta recipe={recipe} />
+          </div>
+
         </div>
 
         {/* Layout */}
@@ -71,9 +96,11 @@ export default function RecipeDetailPage() {
           {/* Ingredients */}
           <div className="lg:col-span-1">
 
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm sticky top-24">
+            <div className="relative bg-white border border-gray-200 rounded-2xl p-6 shadow-sm sticky top-24 overflow-hidden transition hover:shadow-lg duration-300">
 
-              <h2 className="text-lg font-semibold mb-4">
+              <div className="absolute -top-10 right-0 w-24 h-24 bg-emerald-200/20 blur-3xl rounded-full"></div>
+
+              <h2 className="text-lg font-semibold mb-4 text-gray-800">
                 Ingredients
               </h2>
 
@@ -86,9 +113,11 @@ export default function RecipeDetailPage() {
           {/* Steps */}
           <div className="lg:col-span-2">
 
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+            <div className="relative bg-white border border-gray-200 rounded-2xl p-6 shadow-sm overflow-hidden transition hover:shadow-lg duration-300">
 
-              <h2 className="text-lg font-semibold mb-4">
+              <div className="absolute -top-10 left-0 w-24 h-24 bg-green-200/20 blur-3xl rounded-full"></div>
+
+              <h2 className="text-lg font-semibold mb-4 text-gray-800">
                 Cooking Steps
               </h2>
 

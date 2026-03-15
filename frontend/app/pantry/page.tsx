@@ -6,129 +6,189 @@ import PantryGrid from "@/components/ui/PantryGrid";
 import IngredientForm from "@/components/IngredientForm";
 import { PantryItem } from "@/types/PantryItem";
 import {
-  getPantryItems,
-  addPantryItem,
-  updatePantryItem,
-  deletePantryItem,
+getPantryItems,
+addPantryItem,
+updatePantryItem,
+deletePantryItem,
 } from "@/services/pantry.service";
 import PageHeader from "@/components/ui/PageHeader";
+import AnimatedBackground from "@/components/ui/AnimatedBackground";
 
 export default function PantryPage() {
-  const { user } = useUser();
 
-  const [items, setItems] = useState<PantryItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
+const { user } = useUser();
 
-  const handleAddIngredient = async (data: { name: string; quantity: number }) => {
-    try {
-      const newItem = await addPantryItem(user?.id as string, data);
-      setItems((prev) => [...prev, newItem]);
-      setShowForm(false);
-    } catch (error) {
-      console.error("Error adding ingredient:", error);
-    }
-  };
+const [items, setItems] = useState<PantryItem[]>([]);
+const [loading, setLoading] = useState(true);
+const [showForm, setShowForm] = useState(false);
+const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
 
-  const handleDeleteIngredient = async (id: string) => {
-    try {
-      await deletePantryItem(user?.id as string, id);
-      setItems((prev) => prev.filter((item) => item.id !== id));
-    } catch (error) {
-      console.error("Error deleting ingredient:", error);
-    }
-  };
+const handleAddIngredient = async (data: { name: string; quantity: number }) => {
 
-  const handleEditIngredient = (item: PantryItem) => {
-    setEditingItem(item);
-    setShowForm(true);
-  };
 
-  const handleUpdateIngredient = async (data: { name: string; quantity: number }) => {
-    if (!editingItem) return;
+try {
 
-    try {
-      const updatedItem = await updatePantryItem(
-        user?.id as string,
-        editingItem.id,
-        data
-      );
+  const newItem = await addPantryItem(user?.id as string, data);
+  setItems((prev) => [...prev, newItem]);
+  setShowForm(false);
 
-      setItems((prev) =>
-        prev.map((item) => (item.id === editingItem.id ? updatedItem : item))
-      );
+} catch (error) {
+  console.error("Error adding ingredient:", error);
+}
 
-      setEditingItem(null);
-      setShowForm(false);
-    } catch (error) {
-      console.error("Error updating ingredient:", error);
-    }
-  };
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      if (!user?.id) return;
+};
 
-      try {
-        const data = await getPantryItems(user.id);
-        setItems(data);
-      } catch (error) {
-        console.error("Error fetching pantry items:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+const handleDeleteIngredient = async (id: string) => {
 
-    fetchItems();
-  }, [user]);
 
-  if (loading) {
-    return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading pantry...</p>
-      </div>
-    );
+try {
+
+  await deletePantryItem(user?.id as string, id);
+  setItems((prev) => prev.filter((item) => item.id !== id));
+
+} catch (error) {
+  console.error("Error deleting ingredient:", error);
+}
+
+
+};
+
+const handleEditIngredient = (item: PantryItem) => {
+
+
+setEditingItem(item);
+setShowForm(true);
+
+
+};
+
+const handleUpdateIngredient = async (data: { name: string; quantity: number }) => {
+
+
+if (!editingItem) return;
+
+try {
+
+  const updatedItem = await updatePantryItem(
+    user?.id as string,
+    editingItem.id,
+    data
+  );
+
+  setItems((prev) =>
+    prev.map((item) =>
+      item.id === editingItem.id ? updatedItem : item
+    )
+  );
+
+  setEditingItem(null);
+  setShowForm(false);
+
+} catch (error) {
+  console.error("Error updating ingredient:", error);
+}
+
+
+};
+
+useEffect(() => {
+
+const fetchItems = async () => {
+
+  if (!user?.id) return;
+
+  try {
+
+    const data = await getPantryItems(user.id);
+    setItems(data);
+
+  } catch (error) {
+    console.error("Error fetching pantry items:", error);
+  } finally {
+    setLoading(false);
   }
 
-  return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto px-6 py-10 space-y-8">
+};
 
-        <PageHeader
-          title="Pantry"
-          subtitle="Manage ingredients available in your kitchen"
-        />
+fetchItems();
 
-        <div className="flex justify-end">
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-emerald-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-emerald-700 transition"
-          >
-            + Add Ingredient
-          </button>
-        </div>
 
-        {showForm && (
-          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-            <IngredientForm
-              editingItem={editingItem}
-              onSubmit={editingItem ? handleUpdateIngredient : handleAddIngredient}
-              onCancel={() => {
-                setShowForm(false);
-                setEditingItem(null);
-              }}
-            />
-          </div>
-        )}
+}, [user]);
 
-        <PantryGrid
-          items={items}
-          onEdit={handleEditIngredient}
-          onDelete={handleDeleteIngredient}
+if (loading) {
+
+
+return (
+
+  <div className="relative bg-gray-50 min-h-screen flex items-center justify-center overflow-hidden">
+
+    <AnimatedBackground />
+
+    <p className="relative text-gray-500 text-lg animate-pulse">
+      Loading pantry...
+    </p>
+
+  </div>
+
+);
+
+
+}
+
+return (
+
+
+<div className="relative bg-gray-50 min-h-screen overflow-hidden">
+
+  <AnimatedBackground />
+
+  <main className="relative max-w-6xl mx-auto px-6 py-10 space-y-8">
+
+    <PageHeader
+      title="Pantry"
+      subtitle="Manage ingredients available in your kitchen"
+    />
+
+    <div className="flex justify-end">
+
+      <button
+        onClick={() => setShowForm(true)}
+        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all duration-300 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-lg"
+      >
+        + Add Ingredient
+      </button>
+
+    </div>
+
+    {showForm && (
+
+      <div className="bg-white/90 backdrop-blur border border-gray-200 rounded-xl p-6 shadow-sm transition hover:shadow-lg duration-300">
+
+        <IngredientForm
+          editingItem={editingItem}
+          onSubmit={editingItem ? handleUpdateIngredient : handleAddIngredient}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingItem(null);
+          }}
         />
 
       </div>
-    </div>
-  );
+
+    )}
+
+    <PantryGrid
+      items={items}
+      onEdit={handleEditIngredient}
+      onDelete={handleDeleteIngredient}
+    />
+
+  </main>
+
+</div>
+
+
+);
+
 }

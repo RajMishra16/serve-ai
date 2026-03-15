@@ -3,9 +3,10 @@ import RecipeCard from "./RecipeCard"
 
 type RecipeGridProps = {
   recipes: Recipe[]
+  loading?: boolean
 }
 
-export default function RecipeGrid({ recipes }: RecipeGridProps) {
+export default function RecipeGrid({ recipes, loading }: RecipeGridProps) {
 
   const safeRecipes = Array.isArray(recipes)
     ? recipes.filter((recipe) => recipe && recipe.id)
@@ -20,15 +21,27 @@ export default function RecipeGrid({ recipes }: RecipeGridProps) {
   }
 
   return (
+
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-      {safeRecipes.map((recipe) => (
-        <RecipeCard
+      {safeRecipes.map((recipe, index) => (
+
+        <div
           key={recipe.id}
-          recipe={recipe}
-        />
+          style={{ animationDelay: `${index * 60}ms` }}
+          className="animate-[fadeInUp_0.35s_ease_forwards]"
+        >
+
+          <RecipeCard
+            recipe={recipe}
+            loading={loading}
+          />
+
+        </div>
+
       ))}
 
     </div>
+
   )
 }

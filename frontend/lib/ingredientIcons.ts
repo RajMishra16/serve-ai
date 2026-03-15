@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 
 export const getIngredientIcon = (name: string) => {
-  const item = name.toLowerCase()
+  const item = (name || "").toLowerCase()
 
   // Lucide icons
   if (item.includes("apple")) return Apple

@@ -75,8 +75,8 @@ export const deletePantryItem = async (
     await api.delete(`/pantry/${id}`, {
       params: { userId },
     });
-  } catch (error: any) {
-    console.error("Delete Pantry Item Error:", error);
+  } catch (error) {
+    console.error("Error deleting pantry item:", error);
     throw error;
   }
 };

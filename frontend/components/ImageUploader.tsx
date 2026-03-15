@@ -20,7 +20,6 @@ export default function ImageUploader({ onScanComplete }: Props) {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
     const file = event.target.files?.[0]
-
     if (!file) return
 
     const reader = new FileReader()
@@ -28,7 +27,6 @@ export default function ImageUploader({ onScanComplete }: Props) {
     reader.onloadend = async () => {
 
       const base64 = reader.result as string
-
       setPreview(base64)
 
       try {
@@ -61,20 +59,37 @@ export default function ImageUploader({ onScanComplete }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+
+    <div className="space-y-6">
 
       {/* Upload Card */}
-      <label className="flex flex-col items-center justify-center gap-3 p-10 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+      <label
+        className="
+        group relative flex flex-col items-center justify-center gap-4
+        p-12
+        border-2 border-dashed border-gray-300
+        rounded-2xl
+        bg-gray-50
+        hover:bg-gray-100
+        hover:border-emerald-400
+        transition
+        cursor-pointer
+        overflow-hidden
+        "
+      >
 
-        <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm">
-          <Camera className="w-5 h-5 text-gray-600" />
+        {/* Glow hover */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-emerald-400/10 via-green-400/10 to-lime-400/10 pointer-events-none"></div>
+
+        <div className="relative w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition">
+          <Camera className="w-6 h-6 text-gray-600" />
         </div>
 
-        <p className="text-sm text-gray-700 font-medium">
+        <p className="relative text-sm text-gray-700 font-semibold">
           Click to upload an ingredient image
         </p>
 
-        <p className="text-xs text-gray-400">
+        <p className="relative text-xs text-gray-400">
           JPG, PNG supported
         </p>
 
@@ -89,23 +104,39 @@ export default function ImageUploader({ onScanComplete }: Props) {
 
       {/* Image Preview */}
       {preview && (
-        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+
+        <div className="relative bg-white border border-gray-200 rounded-xl p-4 shadow-sm overflow-hidden">
+
           <img
             src={preview}
             alt="Preview"
-            className="w-full max-h-64 object-contain rounded-lg"
+            className="w-full max-h-72 object-contain rounded-lg"
           />
+
+          {/* subtle bottom glow */}
+          <div className="absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r from-emerald-400 to-green-500 opacity-40"></div>
+
         </div>
+
       )}
 
       {/* Loading */}
       {loading && (
-        <div className="text-sm text-gray-600 flex items-center gap-2">
-          <Upload className="w-4 h-4 animate-pulse" />
-          Scanning ingredients...
+
+        <div className="flex items-center gap-3 text-sm text-gray-600">
+
+          <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+
+          <span className="font-medium">
+            Scanning ingredients with AI...
+          </span>
+
         </div>
+
       )}
 
     </div>
+
   )
+
 }
