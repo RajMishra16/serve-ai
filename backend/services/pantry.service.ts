@@ -139,45 +139,57 @@ export async function updatePantryItem(
   userId: string,
   itemId: string,
   data: { name?: string; quantity?: number }
-): Promise<PantryItem> {
+) {
   try {
-    await db.query(
-      `
-      UPDATE pantry_items
-      SET
-        name = COALESCE(?, name),
-        quantity = COALESCE(?, quantity)
-      WHERE id = ? AND user_id = ?
-      `,
-      [data.name ?? null, data.quantity ?? null, itemId, userId]
-    );
 
-    const [rows]: any = await db.query(
-      `
-      SELECT id, name, quantity, confidence, added_via, created_at
-      FROM pantry_items
-      WHERE id = ? AND user_id = ?
-      `,
-      [itemId, userId]
-    );
+    const fields = [];
+    const values: any[] = [];
 
-    if (rows.length === 0) {
-      throw new Error("Pantry item not found");
+    if (data.name !== undefined) {
+      fields.push("name = ?");
+      values.push(data.name);
     }
 
-    const row = rows[0];
+    if (data.quantity !== undefined) {
+      fields.push("quantity = ?");
+      values.push(data.quantity);
+    }
 
-    return {
-      id: row.id,
-      name: row.name,
-      quantity: Number(row.quantity),
-      confidence: row.confidence ?? null,
-      added_via: row.added_via ?? null,
-      created_at: row.created_at,
-    };
+    if (fields.length === 0) {
+      return {
+        success: false,
+        message: "No fields to update",
+      };
+    }
+
+    values.push(itemId);
+
+const [result]: any = await db.query(
+  `
+  UPDATE pantry_items
+  SET ${fields.join(", ")}
+  WHERE id = ?
+  `,
+  values
+);
+
+    if (!result || result.affectedRows === 0) {
+      return {
+        success: false,
+        message: "Pantry item not found",
+      };
+    }
+
+    const [rows]: any = await db.query(
+      `SELECT * FROM pantry_items WHERE id = ?`,
+      [itemId]
+    );
+
+    return rows[0];
+
   } catch (error) {
-    console.error("Error updating pantry item:", error);
-    throw new Error("Failed to update pantry item");
+    console.error("DB update error:", error);
+    throw error;
   }
 }
 
@@ -186,21 +198,25 @@ export async function deletePantryItem(
   itemId: string
 ) {
   try {
-    const [result]: any = await db.query(
-      `
-      DELETE FROM pantry_items
-      WHERE id = ? AND user_id = ?
-      `,
-      [itemId, userId]
-    );
 
-    if (result.affectedRows === 0) {
-      throw new Error("Pantry item not found");
+    const [result]: any = await db.query(
+  `DELETE FROM pantry_items WHERE id = ?`,
+  [itemId]
+);
+
+    if (!result || result.affectedRows === 0) {
+      return {
+        success: false,
+        message: "Pantry item not found",
+      };
     }
 
-    return { success: true };
+    return {
+      success: true,
+    };
+
   } catch (error) {
-    console.error("Error deleting pantry item:", error);
-    throw new Error("Failed to delete pantry item");
+    console.error("DB delete error:", error);
+    throw error;
   }
 }

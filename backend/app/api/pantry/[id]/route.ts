@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { updatePantryItem } from "@/services/pantry.service";
+import { updatePantryItem, deletePantryItem } from "@/services/pantry.service";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -37,6 +37,7 @@ export async function PATCH(
       success: true,
       data: updatedItem,
     });
+
   } catch (error) {
     console.error("Error updating pantry item:", error);
 
@@ -49,7 +50,6 @@ export async function PATCH(
     );
   }
 }
-import { deletePantryItem } from "@/services/pantry.service";
 
 export async function DELETE(
   req: Request,
@@ -58,23 +58,28 @@ export async function DELETE(
   try {
     const { id } = await context.params;
 
-    // TEMP user id until Clerk auth is connected
-    const userId = "test-user";
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "UserId is required" },
+        { status: 400 }
+      );
+    }
 
     await deletePantryItem(userId, id);
 
     return NextResponse.json({
       success: true,
-      message: "Pantry item deleted",
+      message: "Pantry item deleted successfully",
     });
+
   } catch (error) {
-    console.error("Error deleting pantry item:", error);
+    console.error("DELETE pantry error:", error);
 
     return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to delete pantry item",
-      },
+      { success: false, error: "Failed to delete pantry item" },
       { status: 500 }
     );
   }
