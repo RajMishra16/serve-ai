@@ -22,7 +22,6 @@ export async function getPantryItems(userId: string): Promise<PantryItem[]> {
       [userId]
     );
 
-    // convert MySQL rows to plain objects
     const items: PantryItem[] = rows.map((row: any) => ({
       id: row.id,
       name: row.name,
@@ -58,7 +57,6 @@ export async function addPantryItem(
       [item.name, userId]
     );
 
-    // If item exists → update quantity
     if (existing.length > 0) {
       const newQuantity =
         Number(existing[0].quantity) + Number(item.quantity);
@@ -164,14 +162,14 @@ export async function updatePantryItem(
 
     values.push(itemId);
 
-const [result]: any = await db.query(
-  `
-  UPDATE pantry_items
-  SET ${fields.join(", ")}
-  WHERE id = ?
-  `,
-  values
-);
+    const [result]: any = await db.query(
+      `
+      UPDATE pantry_items
+      SET ${fields.join(", ")}
+      WHERE id = ?
+      `,
+      values
+    );
 
     if (!result || result.affectedRows === 0) {
       return {
@@ -200,9 +198,9 @@ export async function deletePantryItem(
   try {
 
     const [result]: any = await db.query(
-  `DELETE FROM pantry_items WHERE id = ?`,
-  [itemId]
-);
+      `DELETE FROM pantry_items WHERE id = ?`,
+      [itemId]
+    );
 
     if (!result || result.affectedRows === 0) {
       return {
@@ -217,6 +215,29 @@ export async function deletePantryItem(
 
   } catch (error) {
     console.error("DB delete error:", error);
+    throw error;
+  }
+}
+
+/* NEW FUNCTION — Step 1 */
+export async function clearPantry(userId: string) {
+  try {
+
+    const [result]: any = await db.query(
+      `
+      DELETE FROM pantry_items
+      WHERE user_id = ?
+      `,
+      [userId]
+    );
+
+    return {
+      success: true,
+      deleted: result.affectedRows,
+    };
+
+  } catch (error) {
+    console.error("DB clear pantry error:", error);
     throw error;
   }
 }

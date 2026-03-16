@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPantryItems, addPantryItem } from "@/services/pantry.service";
+import { getPantryItems, addPantryItem, clearPantry } from "@/services/pantry.service";
 import { z } from "zod";
 
 const pantrySchema = z.object({
@@ -76,6 +76,38 @@ export async function POST(req: Request) {
       {
         success: false,
         error: error.message || "Failed to add pantry item",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "userId missing" },
+        { status: 400 }
+      );
+    }
+
+    const result = await clearPantry(userId);
+
+    return NextResponse.json({
+      success: true,
+      data: result,
+    });
+
+  } catch (error: any) {
+    console.error("PANTRY DELETE ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "Failed to clear pantry",
       },
       { status: 500 }
     );
