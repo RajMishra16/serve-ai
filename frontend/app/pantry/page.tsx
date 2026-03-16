@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import PantryGrid from "@/components/ui/PantryGrid";
 import IngredientForm from "@/components/IngredientForm";
 import { PantryItem } from "@/types/PantryItem";
@@ -10,6 +11,7 @@ getPantryItems,
 addPantryItem,
 updatePantryItem,
 deletePantryItem,
+clearPantry
 } from "@/services/pantry.service";
 import PageHeader from "@/components/ui/PageHeader";
 import AnimatedBackground from "@/components/ui/AnimatedBackground";
@@ -25,7 +27,6 @@ const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
 
 const handleAddIngredient = async (data: { name: string; quantity: number }) => {
 
-
 try {
 
   const newItem = await addPantryItem(user?.id as string, data);
@@ -36,11 +37,9 @@ try {
   console.error("Error adding ingredient:", error);
 }
 
-
 };
 
 const handleDeleteIngredient = async (id: string) => {
-
 
 try {
 
@@ -51,20 +50,16 @@ try {
   console.error("Error deleting ingredient:", error);
 }
 
-
 };
 
 const handleEditIngredient = (item: PantryItem) => {
 
-
 setEditingItem(item);
 setShowForm(true);
-
 
 };
 
 const handleUpdateIngredient = async (data: { name: string; quantity: number }) => {
-
 
 if (!editingItem) return;
 
@@ -89,6 +84,26 @@ try {
   console.error("Error updating ingredient:", error);
 }
 
+};
+
+/* NEW FUNCTION — CLEAR PANTRY */
+const handleClearPantry = async () => {
+
+if (!user?.id) return;
+
+const confirmClear = confirm("Are you sure you want to clear your entire pantry?");
+
+if (!confirmClear) return;
+
+try {
+
+  await clearPantry(user.id);
+
+  setItems([]);
+
+} catch (error) {
+  console.error("Error clearing pantry:", error);
+}
 
 };
 
@@ -113,11 +128,9 @@ const fetchItems = async () => {
 
 fetchItems();
 
-
 }, [user]);
 
 if (loading) {
-
 
 return (
 
@@ -133,11 +146,9 @@ return (
 
 );
 
-
 }
 
 return (
-
 
 <div className="relative bg-gray-50 min-h-screen overflow-hidden">
 
@@ -150,7 +161,7 @@ return (
       subtitle="Manage ingredients available in your kitchen"
     />
 
-    <div className="flex justify-end">
+    <div className="flex justify-end gap-4">
 
       <button
         onClick={() => setShowForm(true)}
@@ -158,6 +169,20 @@ return (
       >
         + Add Ingredient
       </button>
+
+      <button
+  onClick={handleClearPantry}
+  className="bg-red-500 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-all duration-300 hover:bg-red-600 hover:-translate-y-1 hover:shadow-lg"
+>
+  Clear Pantry
+</button>
+
+      <Link
+  href="/recipes"
+  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2.5 rounded-lg font-medium shadow-md transition-all duration-300 hover:from-green-600 hover:to-emerald-700 hover:-translate-y-1 hover:shadow-xl"
+>
+  Generate Recipes →
+</Link>
 
     </div>
 
@@ -187,7 +212,6 @@ return (
   </main>
 
 </div>
-
 
 );
 

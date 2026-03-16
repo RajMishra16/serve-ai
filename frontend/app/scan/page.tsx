@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import ImageUploader from "@/components/ImageUploader";
 import ScanResultCard from "@/components/ScanResultCard";
 import PageHeader from "@/components/ui/PageHeader";
@@ -28,8 +29,6 @@ export default function ScanPage() {
 
         <div className="group relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-8 transition hover:shadow-xl">
 
-          {/* glow effect */}
-
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-emerald-400/10 via-green-400/10 to-lime-400/10 pointer-events-none"></div>
 
           <div className="relative">
@@ -45,9 +44,21 @@ export default function ScanPage() {
 
           <div className="space-y-6">
 
-            <h2 className="text-xl font-bold text-gray-900 tracking-wide">
-              Detected Ingredients
-            </h2>
+            <div className="flex items-center justify-between">
+
+              <h2 className="text-xl font-bold text-gray-900 tracking-wide">
+                Detected Ingredients
+              </h2>
+
+              {/* NEW BUTTON */}
+              <Link
+                href="/recipes"
+                className="bg-emerald-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-emerald-700 transition shadow-sm"
+              >
+                Generate Recipes →
+              </Link>
+
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 

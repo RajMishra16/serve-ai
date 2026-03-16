@@ -80,3 +80,15 @@ export const deletePantryItem = async (
     throw error;
   }
 };
+
+// CLEAR ALL pantry items
+export const clearPantry = async (userId: string): Promise<void> => {
+  try {
+    await api.delete("/pantry", {
+      params: { userId },
+    });
+  } catch (error) {
+    console.error("Error clearing pantry:", error);
+    throw error;
+  }
+};
