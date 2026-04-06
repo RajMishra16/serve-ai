@@ -23,7 +23,7 @@ export const generateRecipes = async (userId?: string): Promise<Recipe[]> => {
 
   try {
 
-    const response = await api.post("/recipes/generate", {
+    const response = await api.post("/api/recipes/generate", {
       userId
     })
 
@@ -35,9 +35,13 @@ export const generateRecipes = async (userId?: string): Promise<Recipe[]> => {
 
     return result
 
-  } catch (error) {
+  } catch (error: any) {
 
-    console.error("Failed to generate recipes:", error)
+    console.error(
+      "Failed to generate recipes:",
+      error?.response?.data || error.message
+    )
+
     return []
 
   }
@@ -58,7 +62,7 @@ export const getRecipeHistory = async (
   try {
 
     const response = await api.get<ApiResponse<Generation[]>>(
-      "/recipes/history",
+      "/api/recipes/history",
       {
         params: { userId }
       }
@@ -89,7 +93,7 @@ export const getRecipeById = async (
 
   try {
 
-    const response = await api.get(`/recipes/${id}`, {
+    const response = await api.get(`/api/recipes/${id}`, {
       params: { userId }
     })
 
@@ -112,7 +116,7 @@ export const getRecipeLibrary = async (): Promise<LibraryRecipe[]> => {
 
   try {
 
-    const response = await api.get<ApiResponse<LibraryRecipe[]>>("/library")
+    const response = await api.get<ApiResponse<LibraryRecipe[]>>("/api/library")
 
     return response.data?.data ?? []
 
@@ -135,7 +139,7 @@ export const getLibraryRecipeById = async (id: string): Promise<Recipe | null> =
 
   try {
 
-    const response = await api.get<ApiResponse<Recipe>>(`/library/${id}`)
+    const response = await api.get<ApiResponse<Recipe>>(`/api/library/${id}`)
 
     return response.data?.data ?? null
 
@@ -162,7 +166,7 @@ export const deleteRecipe = async (
 
   try {
 
-    const response = await api.delete(`/recipes/${id}`, {
+    const response = await api.delete(`/api/recipes/${id}`, {
       params: { userId }
     })
 
