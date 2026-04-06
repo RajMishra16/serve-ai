@@ -13,35 +13,41 @@ export async function generateText(prompt: string): Promise<string> {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat",
+        model: "openai/gpt-3.5-turbo",
+
         messages: [
           {
             role: "user",
             content: prompt
           }
         ],
-        temperature: 0.7
+
+        temperature: 0.7,
+
+        // 🔥 FIX: limit tokens (VERY IMPORTANT)
+        max_tokens: 800
       })
     }
   )
 
-  if (!response.ok) {
+  const text = await response.text()
 
-    const text = await response.text()
+  let data: any
 
-    console.error("OPENROUTER API ERROR:")
-    console.error(text)
-
-    throw new Error("AI request failed")
+  try {
+    data = JSON.parse(text)
+  } catch (err) {
+    console.error("INVALID JSON FROM AI:", text)
+    throw new Error("AI returned invalid JSON")
   }
 
-  const data = await response.json()
+  if (!response.ok) {
+    console.error("OPENROUTER API ERROR:", data)
+    throw new Error(data?.error?.message || "AI request failed")
+  }
 
   if (!data.choices || !data.choices.length) {
-
-    console.error("INVALID AI RESPONSE:")
-    console.error(data)
-
+    console.error("INVALID AI RESPONSE:", data)
     throw new Error("Invalid AI response")
   }
 

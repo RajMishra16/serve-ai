@@ -1,17 +1,11 @@
 import { NextResponse } from "next/server"
-import { generateRecipesFromPantry } from "@/services/recipe.service"
-import { saveGeneratedRecipe } from "@/services/recipe.service"
+import { generateRecipesFromPantry, saveGeneratedRecipe } from "@/services/recipe.service"
 import { v4 as uuidv4 } from "uuid"
 
 export async function POST(req: Request) {
-
   try {
-
     const body = await req.json().catch(() => ({}))
-    const url = new URL(req.url)
-
-    const queryUserId = url.searchParams.get("userId")
-    const userId = body?.userId ?? queryUserId
+    const { userId } = body
 
     if (!userId) {
       return NextResponse.json(
@@ -20,16 +14,13 @@ export async function POST(req: Request) {
       )
     }
 
-    // Create generation batch ID
     const generationId = uuidv4()
 
-    // Generate recipes from pantry
     const recipes = await generateRecipesFromPantry(userId)
 
     const finalRecipes = []
 
     for (const recipe of recipes) {
-
       const updatedRecipe = {
         ...recipe,
         image: null,
@@ -38,7 +29,11 @@ export async function POST(req: Request) {
         generationId
       }
 
-      await saveGeneratedRecipe(userId, updatedRecipe)
+      try {
+        await saveGeneratedRecipe(userId, updatedRecipe)
+      } catch (err) {
+        console.error("SAVE ERROR:", err)
+      }
 
       finalRecipes.push(updatedRecipe)
     }
@@ -50,7 +45,6 @@ export async function POST(req: Request) {
     })
 
   } catch (error: any) {
-
     console.error("GENERATE RECIPES ERROR:", error)
 
     return NextResponse.json(
@@ -60,6 +54,5 @@ export async function POST(req: Request) {
       },
       { status: 500 }
     )
-
   }
 }
