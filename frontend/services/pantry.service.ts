@@ -4,7 +4,7 @@ import { PantryItem } from "@/types/PantryItem";
 // GET pantry items
 export const getPantryItems = async (userId: string): Promise<PantryItem[]> => {
   try {
-    const res = await api.get("/pantry", {
+    const res = await api.get("/api/pantry", {
       params: { userId },
     });
 
@@ -28,7 +28,7 @@ export const addPantryItem = async (
   item: Omit<PantryItem, "id">
 ): Promise<PantryItem> => {
   try {
-    const res = await api.post("/pantry", {
+    const res = await api.post("/api/pantry", {
       name: item.name,
       quantity: item.quantity,
       added_via: "manual",
@@ -57,7 +57,7 @@ export const updatePantryItem = async (
       userId,
     };
 
-    const res = await api.patch(`/pantry/${id}`, payload);
+    const res = await api.patch(`/api/pantry/${id}`, payload);
 
     return res.data.data;
   } catch (error: any) {
@@ -72,7 +72,7 @@ export const deletePantryItem = async (
   id: string
 ): Promise<void> => {
   try {
-    await api.delete(`/pantry/${id}`, {
+    await api.delete(`/api/pantry/${id}`, {
       params: { userId },
     });
   } catch (error) {
@@ -84,7 +84,7 @@ export const deletePantryItem = async (
 // CLEAR ALL pantry items
 export const clearPantry = async (userId: string): Promise<void> => {
   try {
-    await api.delete("/pantry", {
+    await api.delete("/api/pantry", {
       params: { userId },
     });
   } catch (error) {

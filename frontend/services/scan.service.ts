@@ -13,8 +13,8 @@ export const scanImage = async (
 
   try {
 
-    // 1️⃣ Scan image with AI
-    const response = await api.post<ScanResponse>("/scan", {
+    // ✅ FIX: add /api
+    const response = await api.post<ScanResponse>("/api/scan", {
       imageBase64,
       userId
     })
@@ -29,10 +29,10 @@ export const scanImage = async (
       name: item
     }))
 
-    // 2️⃣ Save scanned ingredients to pantry (SAFE)
+    // optional: keep or remove (backend already saves)
     for (const ingredient of formatted) {
       try {
-        await api.post("/pantry", {
+        await api.post("/api/pantry", {
           name: ingredient.name,
           quantity: 1,
           added_via: "scan",
@@ -48,7 +48,10 @@ export const scanImage = async (
 
   } catch (error: any) {
 
-    console.error("SCAN SERVICE ERROR:", error?.response?.data || error.message)
+    console.error(
+      "SCAN SERVICE ERROR:",
+      error?.response?.data || error.message
+    )
 
     throw error
   }
