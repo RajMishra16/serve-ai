@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { SpeedInsights } from "@vercel/speed-insights/next"; // ✅ added
 import Navbar from "../components/ui/Navbar";
 import AnimatedBackground from "../components/ui/AnimatedBackground";
-import "./globals.css";
+import "./globals.css"; // ✅ this is correct (no issue)
 
 export const metadata: Metadata = {
   title: "ServeAI",
@@ -40,6 +41,9 @@ export default function RootLayout({
             </main>
 
           </div>
+
+          {/* ✅ Speed Insights added at bottom */}
+          <SpeedInsights />
 
         </body>
 
