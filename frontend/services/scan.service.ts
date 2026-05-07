@@ -8,16 +8,21 @@ interface ScanResponse {
 
 export const scanImage = async (
   imageBase64: string,
-  userId: string
+  token: string
 ): Promise<ScanIngredient[]> => {
 
   try {
 
-    // ✅ FIX: add /api
-    const response = await api.post<ScanResponse>("/api/scan", {
-      imageBase64,
-      userId
-    })
+    // ✅ Scan API
+    const response = await api.post<ScanResponse>(
+      "/api/scan",
+      { imageBase64 },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
 
     if (!response.data.success) {
       throw new Error("Scan failed")
@@ -29,16 +34,23 @@ export const scanImage = async (
       name: item
     }))
 
-    // optional: keep or remove (backend already saves)
+    // ✅ Save to pantry (secure)
     for (const ingredient of formatted) {
       try {
-        await api.post("/api/pantry", {
-          name: ingredient.name,
-          quantity: 1,
-          added_via: "scan",
-          confidence: null,
-          userId
-        })
+        await api.post(
+          "/api/pantry",
+          {
+            name: ingredient.name,
+            quantity: 1,
+            added_via: "scan",
+            confidence: null,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
       } catch (error) {
         console.error("Failed to add scanned ingredient:", ingredient.name)
       }
