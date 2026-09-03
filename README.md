@@ -201,7 +201,7 @@ ServeAI uses Google's **Gemini AI** to:
 
 # 👨‍💻 Author
 
-**Sumit Kumar Singh**
+**RAJ MISHRA**
 
 AI Developer • Full Stack Developer • Software Engineer
 
